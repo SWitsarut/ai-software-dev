@@ -1,41 +1,32 @@
-import { useEffect, useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Route, Routes, useNavigate } from "react-router-dom"
+import SideBar from "./components/SideBar"
+import Index from "./pages/Index"
+import NotFound from "./pages/NotFound"
+import { Box, createTheme, Paper } from "@mui/material"
+import Graph from "./pages/Graph"
+
+
+
 
 function App() {
-  const [count, setCount] = useState(0)
-  const Hello = async () => {
-    const res = (await fetch("http://localhost:8080")).json()
-    console.log(res)
-    return res
-  }
-  useEffect(() => {
-    console.log(Hello())
-  }, [])
+  const navigate = useNavigate()
+
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React I like to move it move it
-      </h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Box sx={{ 'display': 'grid', 'gridTemplateColumns': 'auto 1fr', height: '100%', padding: '0', margin: '0' }}>
+        <SideBar navigate={navigate} />
+        <Box sx={{ padding: '2.25em' }}>
+          <Paper elevation={1} sx={{
+            padding: '1em'
+          }}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/graph" element={<Graph />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Paper>
+        </Box>
+      </Box>
     </>
   )
 }

@@ -7,6 +7,15 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+data*
+db
+2DPASS
+Include
+Scripts
+pyvenv.cfg
+share
+Lib
+
 .env
 
 node_modules
