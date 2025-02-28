@@ -19,6 +19,7 @@ Scripts
 pyvenv.cfg
 share
 Lib
+model
 
 .env
 
