@@ -12,6 +12,7 @@ data*
 !data_converter*
 *.las
 
+potree
 db
 2DPASS
 Include
