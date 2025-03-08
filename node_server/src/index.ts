@@ -17,27 +17,18 @@ const stripeKey = process.env.STRIPE_PRIVATE || "";
 const stripe = new Stripe(stripeKey);
 
 // Serve static files
-app.use("/point_clouds",express.static( "public"));
-
-// File listing for /public
-// app.get("/public", (_, res) => {
-//   const publicDir = path.join(__dirname, "public");
-
-//   fs.readdir(publicDir, (err, files) => {
-//     if (err) {
-//       return res.status(500).send(err);
-//     }
-
-//     // Generate links to files
-//     const fileLinks = files.map(file => `<a href="/public/${file}">${file}</a>`).join("<br>");
-//     res.send(`<h1>File List</h1>${fileLinks}`);
-//   });
-// });
+app.set('views', "views");
+app.set('view engine', 'ejs');
+app.use("/potree", express.static("public"));
 
 
-app.get('/', (_, res) => {
-  res.send('Express + TypeScript Server');
-});
+app.get('/', (req, res) => {
+  const data = {
+    libpath:`http://localhost:${PORT}/potree`
+  }
+  res.render('index', data);
+}
+);
 
 app.post("/checkout", async (_, res) => {
 
@@ -77,4 +68,4 @@ app.post("/checkout", async (_, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
-});
+})
