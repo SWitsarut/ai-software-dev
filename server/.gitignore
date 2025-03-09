@@ -2,3 +2,4 @@
 !public/build
 PotreeConverter*
 public/point_cloud/*
+!src/*

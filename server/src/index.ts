@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/auth', auth_router)
-app.use('/user')
+// app.use('/user')
 
 const PORT: number = 8080;
 
@@ -107,6 +107,7 @@ app.listen(PORT, async () => {
     await mongoose.connect(uri, {});
 
     console.log("🛢️ Connected To Database");
+    // dropPhoneNumberIndex()
   } catch (error) {
     console.log("⚠️ Error to connect Database", error);
   }

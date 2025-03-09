@@ -11,23 +11,17 @@ import {
     Paper,
     InputAdornment,
     IconButton,
+    CircularProgress
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { AuthResponse } from './AuthContainer';
-import axios from 'axios';
+import { useAuth } from '../../hooks/useAuth';
+import { RegisterData } from '../../context/AuthProvider';
 interface RegisterFormProps {
     onAuthSuccess: (accessToken: string) => void;
+    onSubmit: (registerData: RegisterData) => Promise<void>;
     switchToLogin: () => void;
-}
-
-export interface RegisterData {
-    userId: string;
-    name: string;
-    phoneNumber: string;
-    email: string;
-    password: string;
 }
 
 interface RegisterErrors {
@@ -39,7 +33,7 @@ interface RegisterErrors {
     confirmPassword?: string;
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogin }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, onSubmit, switchToLogin }) => {
     const [userId, setUserId] = useState<string>('');
     const [name, setName] = useState<string>('');
     const [phoneNumber, setPhoneNumber] = useState<string>('');
@@ -48,21 +42,23 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogi
     const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [errors, setErrors] = useState<RegisterErrors>({});
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const { error: authError, isLoading } = useAuth();
 
     const validateForm = (): boolean => {
         const newErrors: RegisterErrors = {};
 
         // Name validation
         if (!userId.trim()) {
-            newErrors.username = 'username is required';
+            newErrors.username = 'Username is required';
         }
 
         if (!name.trim()) {
-            newErrors.name = 'username is required';
+            newErrors.name = 'Name is required';
         }
 
         if (!phoneNumber.trim()) {
-            newErrors.phoneNumber = 'phoneNumber is required';
+            newErrors.phoneNumber = 'Phone number is required';
         }
 
         // Email validation
@@ -94,25 +90,34 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogi
         event.preventDefault();
 
         if (validateForm()) {
-            const registerData = { userId, name, phoneNumber, email, password };
-            await axios.post<AuthResponse>('http://localhost:8080/auth/register', registerData).then(res => {
-                console.log(res)
-                if (onAuthSuccess) {
-                    onAuthSuccess(res.data?.accessToken as string || "");
-                }
-            }).catch(e => {
-                console.log('errror', e.response.data.error.name)
+            setIsSubmitting(true);
+            try {
+                const registerData: RegisterData = { userId, name, phoneNumber, email, password };
+                await onSubmit(registerData);
+            } catch (error: any) {
+                // Handle errors if onSubmit doesn't handle them
                 const newErrors: RegisterErrors = {};
-                newErrors.username = e.response.data.error.username
-                newErrors.name = e.response.data.error.name
-                newErrors.password = e.response.data.error.password
-                newErrors.confirmPassword = e.response.data.error.confirmPassword
-                newErrors.phoneNumber = e.response.data.error.phoneNumber
-                newErrors.email = e.response.data.error.email
-                setErrors(newErrors)
-            })
+                if (error.response?.data?.error) {
+                    newErrors.username = error.response.data.error.userId;
+                    newErrors.name = error.response.data.error.name;
+                    newErrors.password = error.response.data.error.password;
+                    newErrors.confirmPassword = error.response.data.error.confirmPassword;
+                    newErrors.phoneNumber = error.response.data.error.phoneNumber;
+                    newErrors.email = error.response.data.error.email;
+                }
+                setErrors(newErrors);
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     };
+
+    // If there's an auth error from the context, update the local errors
+    React.useEffect(() => {
+        if (authError) {
+            setErrors({ username: authError });
+        }
+    }, [authError]);
 
     const togglePasswordVisibility = (): void => {
         setShowPassword(!showPassword);
@@ -131,7 +136,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogi
                     <Grid container spacing={2}>
                         <Grid item xs={12} >
                             <TextField
-                                // autoComplete="given-name"
                                 name="userId"
                                 required
                                 fullWidth
@@ -140,8 +144,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogi
                                 autoFocus
                                 value={userId}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setUserId(e.target.value)}
-                                error={!!errors.name}
-                                helperText={errors.name}
+                                error={!!errors.username}
+                                helperText={errors.username}
+                                disabled={isSubmitting || isLoading}
                             />
                         </Grid>
                         <Grid item xs={12} >
@@ -156,6 +161,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogi
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                                 error={!!errors.name}
                                 helperText={errors.name}
+                                disabled={isSubmitting || isLoading}
                             />
                         </Grid>
                         <Grid item xs={12} >
@@ -165,11 +171,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogi
                                 id="phoneNumber"
                                 label="Phone number"
                                 name="phone number"
-                                autoComplete="family-name"
+                                autoComplete="tel"
                                 value={phoneNumber}
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setPhoneNumber(e.target.value)}
                                 error={!!errors.phoneNumber}
                                 helperText={errors.phoneNumber}
+                                disabled={isSubmitting || isLoading}
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -184,6 +191,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogi
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                                 error={!!errors.email}
                                 helperText={errors.email}
+                                disabled={isSubmitting || isLoading}
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -199,6 +207,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogi
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                                 error={!!errors.password}
                                 helperText={errors.password}
+                                disabled={isSubmitting || isLoading}
                                 InputProps={{
                                     endAdornment: (
                                         <InputAdornment position="end">
@@ -206,6 +215,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogi
                                                 aria-label="toggle password visibility"
                                                 onClick={togglePasswordVisibility}
                                                 edge="end"
+                                                disabled={isSubmitting || isLoading}
                                             >
                                                 {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                                             </IconButton>
@@ -226,6 +236,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogi
                                 onChange={(e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                                 error={!!errors.confirmPassword}
                                 helperText={errors.confirmPassword}
+                                disabled={isSubmitting || isLoading}
                             />
                         </Grid>
                     </Grid>
@@ -234,8 +245,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, switchToLogi
                         fullWidth
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
+                        disabled={isSubmitting || isLoading}
                     >
-                        Sign Up
+                        {(isSubmitting || isLoading) ? <CircularProgress size={24} /> : 'Sign Up'}
                     </Button>
                     <Grid container justifyContent="flex-end">
                         <Grid item>

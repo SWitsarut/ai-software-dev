@@ -11,15 +11,12 @@ import {
   Paper,
   InputAdornment,
   IconButton,
+  CircularProgress
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import axios from 'axios';
-import { AuthResponse } from './AuthContainer';
-
-
-
+import { useAuth } from '../../hooks/useAuth';
 
 export interface LoginResponse {
   status: number,
@@ -29,6 +26,7 @@ export interface LoginResponse {
 
 interface LoginFormProps {
   onAuthSuccess: (accessToken: string) => void;
+  onSubmit: (userId: string, password: string) => Promise<void>;
   switchToRegister: () => void;
 }
 
@@ -42,18 +40,20 @@ interface LoginErrors {
   password?: string;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onAuthSuccess, switchToRegister }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onAuthSuccess, onSubmit, switchToRegister }) => {
   const [userId, setUserId] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errors, setErrors] = useState<LoginErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const { error: authError, isLoading } = useAuth();
 
   const validateForm = (): boolean => {
     const newErrors: LoginErrors = {};
 
-    // Basic email validation
+    // Basic validation
     if (!userId) {
-      newErrors.userId = 'userId is required';
+      newErrors.userId = 'Username is required';
     }
 
     // Basic password validation
@@ -67,26 +67,35 @@ const LoginForm: React.FC<LoginFormProps> = ({ onAuthSuccess, switchToRegister }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const loginData: LoginData = { userId, password }
+    
     if (validateForm()) {
-      await axios.post<AuthResponse>('http://localhost:8080/auth/login', loginData).then(res => {
-        console.log(res.data?.accessToken)
-        if (onAuthSuccess) {
-          onAuthSuccess(res.data?.accessToken as string || "");
-        }
-      }).catch(e => {
-        console.log('errror', e.response.data.error.name)
+      setIsSubmitting(true);
+      try {
+        await onSubmit(userId, password);
+      } catch (error: any) {
+        // Handle errors if onSubmit doesn't handle them
         const newErrors: LoginErrors = {};
-        newErrors.userId = e.response.data.error.userId
-        newErrors.password = e.response.data.error.password
-        setErrors(newErrors)
-      })
+        if (error.response?.data?.error) {
+          newErrors.userId = error.response.data.error.userId;
+          newErrors.password = error.response.data.error.password;
+        }
+        setErrors(newErrors);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
   const togglePasswordVisibility = (): void => {
     setShowPassword(!showPassword);
   };
+
+  // If there's an auth error from the context, update the local errors
+  React.useEffect(() => {
+    if (authError) {
+      setErrors({ userId: authError });
+    }
+  }, [authError]);
 
   return (
     <Container component="main" maxWidth="xs">
@@ -110,6 +119,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onAuthSuccess, switchToRegister }
             onChange={(e: ChangeEvent<HTMLInputElement>) => setUserId(e.target.value)}
             error={!!errors.userId}
             helperText={errors.userId}
+            disabled={isSubmitting || isLoading}
           />
           <TextField
             margin="normal"
@@ -124,6 +134,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onAuthSuccess, switchToRegister }
             onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             error={!!errors.password}
             helperText={errors.password}
+            disabled={isSubmitting || isLoading}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -131,6 +142,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onAuthSuccess, switchToRegister }
                     aria-label="toggle password visibility"
                     onClick={togglePasswordVisibility}
                     edge="end"
+                    disabled={isSubmitting || isLoading}
                   >
                     {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                   </IconButton>
@@ -144,8 +156,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onAuthSuccess, switchToRegister }
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
+            disabled={isSubmitting || isLoading}
           >
-            Sign In
+            {(isSubmitting || isLoading) ? <CircularProgress size={24} /> : 'Sign In'}
           </Button>
           <Grid container>
             <Grid item xs>

@@ -1,33 +1,33 @@
-import { error } from "console";
-import { Request, Response, NextFunction } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
-
-// interface CustomJwtPayload extends JwtPayload {
-//     name: string;
-//     role: string;
-// }
-
-// // Extend the Request interface to include the custom user object
-// export interface AuthRequest extends Request {
-//     user?: CustomJwtPayload;  // Specify the custom type
-// }
+import { NextFunction } from "express";
+import jwt from 'jsonwebtoken'
+import { secret } from "../auth";
 
 
-const verifyToken = (req: { headers: { authorization: string; }; user: string | jwt.JwtPayload; }, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { message: string; }): any; new(): any; }; }; }, next: () => void) => {
-    const token = req.headers.authorization?.split(" ")[1]; // Extract token from header
+
+export default function authenticateToken(req: any, res: any, next: NextFunction) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ message: "Access Denied. No token provided." });
+        return res.status(401).json({ message: "Unauthorized" });
     }
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
-        req.user = decoded
-        next()
+    jwt.verify(token, secret, (err: any, decoded: any) => {
+        if (err) {
+            return res.status(403).json({ message: "Forbidden" });
+        }
 
-    } catch (err) {
-        return res.status(403).json({ message: "Invalid or expired token." });
-    }
-};
+        // Make sure decoded contains the required fields
+        if (!decoded.userId) {
+            return res.status(403).json({ message: "Invalid token payload" });
+        }
 
-export default verifyToken;
+        req.user = {
+            userId: decoded.userId,
+            role: decoded.role || 'user', // Default to 'user' if role is not in token
+            name: decoded.name || '' // Default empty string if name is not in token
+        };
+
+        next();
+    });
+}
