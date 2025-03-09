@@ -48,7 +48,7 @@ const SideBarItem: React.FC<SideBarItemProps> = ({
           }
         },
         mb: 0.5,
-        borderRadius: open ? `0 24px 24px 0` : 0, // Rounded corner when open
+        // borderRadius: open ? `0 24px 24px 0` : 0, // Rounded corner when open
         mx: open ? 1 : 0,
       }}
     >

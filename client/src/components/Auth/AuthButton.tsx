@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,7 @@ function AuthButton({ sidebar_open }: props) {
   const [open, setOpen] = useState<boolean>(false);
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-  const { user, token, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
 
@@ -83,7 +83,6 @@ function AuthButton({ sidebar_open }: props) {
               }
             },
             mb: 0.5,
-            borderRadius: sidebar_open ? `0 24px 24px 0` : 0, // Rounded corner when open
             mx: sidebar_open ? 1 : 0,
           }}
         >
@@ -118,7 +117,7 @@ function AuthButton({ sidebar_open }: props) {
               }
             },
             mb: 0.5,
-            borderRadius: sidebar_open ? `0 24px 24px 0` : 0,
+            // borderRadius: sidebar_open ? `0 24px 24px 0` : 0,
             mx: sidebar_open ? 1 : 0,
           }}
         >

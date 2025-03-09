@@ -14,11 +14,13 @@ import { NavigateFunction, useLocation } from "react-router-dom";
 
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import SideBarItem from "./SideBarItem";
-import { options } from "../../App";
+// import { options } from "../../App";
 import AuthButton from "../Auth/AuthButton";
+import ThemeToggle from "../ThemeToggle";
 
 interface SideBarProps {
     navigate: NavigateFunction;
+    options: SideBarItemProps[];
 }
 
 export interface SideBarItemProps {
@@ -30,7 +32,7 @@ export interface SideBarItemProps {
 
 
 
-const SideBar: React.FC<SideBarProps> = ({ navigate }) => {
+const SideBar: React.FC<SideBarProps> = ({ navigate,options }) => {
     const [open, setOpen] = useState<boolean>(true);
     const location = useLocation();
     const theme = useTheme();
@@ -132,7 +134,7 @@ const SideBar: React.FC<SideBarProps> = ({ navigate }) => {
 
             </List>
             <List sx={{ padding: 0 }}>
-                <Box sx={{ mt: 1 }}>
+                <Box sx={{ mt: 1 }} display={'flex'} >
                     <AuthButton sidebar_open={open} />
                 </Box>
             </List>
