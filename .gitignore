@@ -10,7 +10,7 @@ lerna-debug.log*
 
 
 potree
-
+!server/public/build/*
 data*
 !data_converter*
 *.las
