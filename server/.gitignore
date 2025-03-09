@@ -1,4 +1,4 @@
-!public
-!public/potree
+!public/lib
+!public/build
 PotreeConverter*
 public/point_cloud/*
