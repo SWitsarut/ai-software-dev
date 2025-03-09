@@ -1,3 +1,4 @@
 !public
+!public/potree
 PotreeConverter*
-public/point_cloud
+public/point_cloud/*
