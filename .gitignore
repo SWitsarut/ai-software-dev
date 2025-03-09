@@ -14,7 +14,7 @@ potree
 data*
 !data_converter*
 *.las
-
+!server/src/*
 
 db
 2DPASS

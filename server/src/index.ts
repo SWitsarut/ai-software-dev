@@ -10,8 +10,6 @@ const app = express();
 
 dotenv.config();
 app.use(cors());
-// app.use(express.json());
-// app.use(express.urlencoded({extended:true}))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -47,7 +45,7 @@ app.get('/', (req, res) => {
 })
 
 app.post('/', (req, res) => {
-  const dataValue = req.body.data
+  const dataValue = "point_cloud/" + req.body.data
   console.log(dataValue)
   const data = {
     data: dataValue,
@@ -98,14 +96,18 @@ app.post("/checkout", async (_, res) => {
 //   console.log(`Server is running at http://localhost:${PORT}`);
 // })
 app.listen(PORT, async () => {
-  console.log(`🗄️ Server Fire on http:localhost//${PORT}`);
+  console.log(`🗄️ Server Fire on http:localhost:${PORT}`);
   // Connect To The Database
+  const uri = 'mongodb://root:example123@mongo:27017/'
+  // const uri = `mongodb://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`
+  console.log(uri)
+
   try {
-    await mongoose.connect(
-      process.env.DATABASE_URL as string
-    );
+    // await mongoose.connect(DB_CONNECT_URL);
+    await mongoose.connect(uri, {});
+
     console.log("🛢️ Connected To Database");
   } catch (error) {
-    console.log("⚠️ Error to connect Database");
+    console.log("⚠️ Error to connect Database", error);
   }
 });
