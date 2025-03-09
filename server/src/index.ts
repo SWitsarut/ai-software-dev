@@ -3,13 +3,15 @@ import dotenv from 'dotenv';
 import cors from "cors";
 import Stripe from "stripe";
 import { visible_label } from './aviable_label';
-
+import auth_router from './auth'
 const app = express();
 
 dotenv.config();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
+
+app.use('/auth',auth_router)
 
 
 const PORT: number = 8080;
