@@ -13,10 +13,10 @@ services:
       - "CHOKIDAR_USEPOLLING=true"
     command: >
         sh -c "npm install && npm run dev"
-  node_server:
+  server:
     container_name: express-server
     build:
-      context: "./node_server"
+      context: "./server"
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
