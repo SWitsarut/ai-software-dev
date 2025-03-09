@@ -9,17 +9,6 @@ const router = Router()
 
 const secret = process.env.ACCESS_TOKEN_SECRET || "";
 
-// const  verifyToken: RequestHandler =(req, res, next)=> {
-//     const token = req.header('Authorization');
-//     if (!token) return res.status(401).json({ error: 'Access denied' });
-//     try {
-//         const decoded = jwt.verify(token, 'your-secret-key');
-//         req.userId = decoded.userId;
-//         next();
-//     } catch (error) {
-//         res.status(401).json({ error: 'Invalid token' });
-//     }
-// };
 
 declare global {
     namespace Express {
@@ -28,49 +17,6 @@ declare global {
         }
     }
 }
-
-// const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-//     const authorization = req.headers.get('authorization');
-//     const token = authorization && authorization.split(' ')[1];
-
-//     if (!token) {
-//         return next; // Unauthorized if no token
-//     }
-
-//     jwt.verify(token, secret, (err, user: JwtPayload | string | undefined) => {
-//         if (err) {
-//             return res.sendStatus(403); // Forbidden if token verification fails
-//         }
-
-//         if (user && typeof user !== 'string' && 'name' in user && 'role' in user) {
-//             req.user = { name: user.name, role: user.role }; // Add both name and role to req.user
-//             next();
-//         } else {
-//             return res.sendStatus(403); // Forbidden if invalid token structure
-//         }
-//     });
-// };
-
-// Example of role-based route protection (optional)
-// const adminOnly: RequestHandler = (req, res, next) => {
-//     if (req.user?.role !== 'admin') {
-//         return res.status(403).json({ message: 'You do not have permission to access this resource' });
-//     }
-//     next(); // If role is admin, allow access
-// };
-
-// router.get('/test', authenticateToken, (req, res) => {
-//     if (req.user.name === 'Jane Doe') {
-//         return res.send('Yes');
-//     } else {
-//         res.send('No');
-//     }
-// });
-
-// router.post('/register', async (req, res):Promise<any> => {
-//     const { userId, name } = req.body
-//     return res.status(200).json({})
-// })
 
 
 router.post("/register", async (req, res): Promise<any> => {
@@ -100,10 +46,9 @@ router.post("/register", async (req, res): Promise<any> => {
             name,
             phoneNumber,
             email,
-            password: hashedPassword, // Use hashed password
+            password: hashedPassword,
         });
 
-        // Save the user to the database
         await newUser.save();
 
         const accessToken = jwt.sign(userId, secret)
@@ -129,7 +74,8 @@ router.post('/login', async (req, res): Promise<any> => {
     if (!isMatch) {
         return res.status(401).json({ error: { password: "Wrong Password" } })
     }
-    const accessToken = jwt.sign(userId, secret)
+    const role = user.role
+    const accessToken = jwt.sign({ userId, role }, secret)
     res.status(200).json({ accessToken })
 })
 

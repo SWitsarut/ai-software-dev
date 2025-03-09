@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/auth', auth_router)
-
+app.use('/user')
 
 const PORT: number = 8080;
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import AuthContainer from './AuthContainer';
+import { useAuth } from '../../hooks/useAuth';
 
 // Slide transition for the dialog
 const Transition = React.forwardRef(function Transition(
@@ -25,11 +26,15 @@ const Transition = React.forwardRef(function Transition(
 
 interface props { sidebar_open: boolean }
 
-const AuthButton = ({ sidebar_open }: props) => {
+function AuthButton({ sidebar_open }: props) {
   const [open, setOpen] = useState<boolean>(false);
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const { token, setToken } = useAuth()
+  const [isSigned, setIsSigned] = useState(localStorage.getItem('authToken'))
 
+
+  console.log('token', token)
   const handleOpen = (): void => {
     setOpen(true);
   };
@@ -43,6 +48,8 @@ const AuthButton = ({ sidebar_open }: props) => {
       localStorage.setItem("authToken", accessToken); // Store token in local storage
       console.log("JWT Token stored:", accessToken);
       setOpen(false);
+      setIsSigned(accessToken)
+      setToken(accessToken)
     } else {
       console.error("Invalid token received.");
     }
@@ -51,8 +58,7 @@ const AuthButton = ({ sidebar_open }: props) => {
 
   return (
     <>
-
-      <ListItemButton
+      {!isSigned ? (<ListItemButton
         onClick={handleOpen}
         sx={{
           minHeight: 48,
@@ -85,7 +91,10 @@ const AuthButton = ({ sidebar_open }: props) => {
             opacity: sidebar_open ? 1 : 0,
           }}
         />
-      </ListItemButton>
+      </ListItemButton>) : (
+        "hello"
+      )}
+
 
       <Dialog
         open={open}
@@ -95,19 +104,11 @@ const AuthButton = ({ sidebar_open }: props) => {
         fullWidth={false}
         maxWidth="sm"
         TransitionComponent={Transition}
-      // PaperProps={{
-      //   sx: { 
-      //     borderRadius: fullScreen ? 0 : 2,
-      //     overflow: 'hidden',
-      //     m: fullScreen ? 0 : 2
-      //   }
-      // }}
       >
-
         <DialogContent sx={{ p: 0 }}>
           <AuthContainer onAuthSuccess={onAuthSuccess} />
         </DialogContent>
-      </Dialog>
+      </Dialog >
     </>
   );
 };

@@ -4,7 +4,6 @@ import Index from "./pages/Index"
 import NotFound from "./pages/NotFound"
 import { Box, Paper } from "@mui/material"
 import Graph from "./pages/Graph"
-import LoginRegister from "./pages/LoginRegister"
 import HomeIcon from '@mui/icons-material/Home';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
 
@@ -29,7 +28,6 @@ function App() {
           }}>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/login" element={<LoginRegister />} />
               <Route path="/graph" element={<Graph />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
