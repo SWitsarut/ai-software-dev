@@ -4,14 +4,18 @@ import cors from "cors";
 import Stripe from "stripe";
 import { visible_label } from './aviable_label';
 import auth_router from './auth'
+import bodyParser from 'body-parser';
+import mongoose from 'mongoose';
 const app = express();
 
 dotenv.config();
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({extended:true}))
+// app.use(express.json());
+// app.use(express.urlencoded({extended:true}))
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use('/auth',auth_router)
+app.use('/auth', auth_router)
 
 
 const PORT: number = 8080;
@@ -25,7 +29,7 @@ app.set('view engine', 'ejs');
 app.use("/potree", express.static("public"));
 
 
-app.get('/',(req,res)=>{
+app.get('/', (req, res) => {
   res.send(`
     <form id="dataForm" action="/" method="POST">
         <input type="hidden" name="data" id="dataInput">
@@ -48,7 +52,7 @@ app.post('/', (req, res) => {
   const data = {
     data: dataValue,
     libpath: `http://localhost:${PORT}/potree`,
-    interest_scheme: visible_label([23,24,12,1])
+    interest_scheme: visible_label([23, 24, 12, 1])
   }
   res.render('index', data);
 }
@@ -90,6 +94,18 @@ app.post("/checkout", async (_, res) => {
 
 
 
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
-})
+// app.listen(PORT, () => {
+//   console.log(`Server is running at http://localhost:${PORT}`);
+// })
+app.listen(PORT, async () => {
+  console.log(`🗄️ Server Fire on http:localhost//${PORT}`);
+  // Connect To The Database
+  try {
+    await mongoose.connect(
+      process.env.DATABASE_URL as string
+    );
+    console.log("🛢️ Connected To Database");
+  } catch (error) {
+    console.log("⚠️ Error to connect Database");
+  }
+});
