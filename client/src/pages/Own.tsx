@@ -1,11 +1,203 @@
-import Page from "../components/Page";
+import React, { useRef, useState, useEffect } from 'react';
+import {
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  ButtonGroup,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  Grid,
+  Box,
+  Divider,
+  Collapse,
+  IconButton
+} from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
+import DataIcon from '@mui/icons-material/Storage';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import Page from '../components/Page';
 
-function Own() {
-  return (
-    <Page header="Stat" >
-      <h1>none</h1>
-    </Page>
-  );
+// Import the labels from aviable_label.ts
+import { labels } from '../utils/avaiable_label';
+
+interface DataFormProps {
+  action?: string;
+  method?: string;
+  target?: string;
+  title?: string;
+  elevation?: number;
 }
 
-export default Own
+const DataForm: React.FC<DataFormProps> = ({
+  action = "http://localhost:8080",
+  method = "POST",
+  target = "_blank",
+}) => {
+  const formRef = useRef<HTMLFormElement>(null);
+  const dataInputRef = useRef<HTMLInputElement>(null);
+  const selectedLabelsRef = useRef<HTMLInputElement>(null);
+
+  // State for selected labels
+  const [selectedLabels, setSelectedLabels] = useState<number[]>([23, 24, 12, 1, 17]); // Default from server code
+  const [showLabels, setShowLabels] = useState<boolean>(false);
+
+  // Convert labels to array for easier mapping
+  const labelsArray = Object.entries(labels)
+    .filter(([key]) => key !== "DEFAULT") // Filter out DEFAULT entry
+    .map(([key, value]) => ({
+      id: Number(key),
+      ...value
+    }))
+    .filter(label => !isNaN(label.id)); // Ensure it's a valid number
+
+  const handleLabelToggle = (labelId: number) => {
+    setSelectedLabels(prev => {
+      if (prev.includes(labelId)) {
+        return prev.filter(id => id !== labelId);
+      } else {
+        return [...prev, labelId];
+      }
+    });
+  };
+
+  const submitForm = (dataValue: string) => {
+    if (dataInputRef.current && selectedLabelsRef.current && formRef.current) {
+      dataInputRef.current.value = dataValue;
+      selectedLabelsRef.current.value = JSON.stringify(selectedLabels);
+      formRef.current.submit();
+    }
+  };
+
+  return (
+    <form
+      ref={formRef}
+      action={action}
+      method={method}
+      target={target}
+      id="dataForm"
+    >
+      <input
+        type="hidden"
+        name="data"
+        id="dataInput"
+        ref={dataInputRef}
+      />
+      <input
+        type="hidden"
+        name="selectedLabels"
+        id="selectedLabelsInput"
+        ref={selectedLabelsRef}
+      />
+
+      <ButtonGroup
+        variant="outlined"
+        aria-label="data loading button group"
+        fullWidth
+        size="large"
+        sx={{ mt: 2, mb: 2 }}
+      >
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('14')}
+        >
+          Load Data 14
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('03/1')}
+        >
+          Load Data 03
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('out')}
+          // endIcon={<SendIcon />}
+        >
+          Load Data out
+        </Button>
+      </ButtonGroup>
+
+      <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mb: 1 }}>
+        <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>
+          Visible Labels ({selectedLabels.length} selected)
+        </Typography>
+        <IconButton
+          onClick={() => setShowLabels(!showLabels)}
+          aria-expanded={showLabels}
+          aria-label="toggle labels"
+        >
+          {showLabels ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </IconButton>
+      </Box>
+
+      <Divider />
+
+      <Collapse in={showLabels}>
+        <Grid container spacing={1} sx={{ mt: 1 }}>
+          {labelsArray.map((label) => (
+            <Grid item xs={6} sm={4} md={3} key={label.id}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={selectedLabels.includes(label.id)}
+                    onChange={() => handleLabelToggle(label.id)}
+                    sx={{
+                      color: `rgba(${label.color[0] * 255}, ${label.color[1] * 255}, ${label.color[2] * 255}, ${label.color[3]})`,
+                      '&.Mui-checked': {
+                        color: `rgba(${label.color[0] * 255}, ${label.color[1] * 255}, ${label.color[2] * 255}, ${label.color[3]})`
+                      }
+                    }}
+                  />
+                }
+                label={
+                  <Typography variant="body2" noWrap>
+                    {label.name}
+                  </Typography>
+                }
+                sx={{
+                  width: '100%',
+                  margin: 0
+                }}
+              />
+            </Grid>
+          ))}
+        </Grid>
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => setSelectedLabels([])}
+          >
+            Clear All
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => setSelectedLabels(labelsArray.map(label => label.id))}
+          >
+            Select All
+          </Button>
+        </Box>
+      </Collapse>
+    </form>
+  );
+};
+
+// Usage example
+const App: React.FC = () => {
+  return (
+    <Page header='Data Visualization Tool'>
+      <DataForm
+        target="_blank"
+        title="Open in New Tab"
+        action="http://localhost:8080"
+        elevation={1}
+      />
+    </Page>
+  );
+};
+
+export default App;

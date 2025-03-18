@@ -1,0 +1,10 @@
+.idea
+test*
+train_log
+semantic*
+!custom*
+!Custom*
+*.las
+combined
+las_out
+data_dir

@@ -30,13 +30,10 @@
     <script src="<%= libpath %>/libs/plasio/js/laslaz.js"></script>
 
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-        <div id="potree_render_area" style="background-image: url('https://p325k7wa.twic.pics/high/dragon-ball/dragonball-xenoverse-2/00-page-setup/dbxv2_game-thumbnail.jpg?twic=v1/resize=760/step=10/quality=80');">
+        <div id="potree_render_area"
+            style="background-image: url('');"
+            >
 
-            <span style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10000">
-                <!-- <input type="button" value="Default Scheme" onclick="setDefaultScheme()" />
-                <input type="button" value="Tree Scheme" onclick="setTreeScheme()" />
-                <input type="button" value="All Scheme" onclick="setAllScheme()" /> -->
-            </span>
 
         </div>
         <div id="potree_sidebar_container"> </div>
@@ -47,11 +44,11 @@
         import * as THREE from "<%= libpath %>/libs/three.js/build/three.module.js";
 
         window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
-        const url = '<%= libpath %>/<%= data %>/metadata.json'
-        console.log('url',url)
-        const description = `Classification <a target='_blank' href=`+url +` >PG&E</a> `
+        const url = '<%= libpath %>/point_cloud/<%= data %>/metadata.json'
+        console.log('url', url)
+        const description = `Classification <a target='_blank' href=` + url + ` >PG&E</a> `
         console.log(description)
-		viewer.setDescription(description);
+        viewer.setDescription(description);
 
         viewer.setEDLEnabled(true);
         viewer.setFOV(60);
@@ -62,59 +59,25 @@
             viewer.toggleSidebar();
         });
 
-
         const interest_scheme = <%- JSON.stringify(interest_scheme) %>
 
+            console.log(interest_scheme)
         Potree.loadPointCloud(url).then(e => {
             let pointcloud = e.pointcloud;
             let material = pointcloud.material;
 
-            // material.activeAttributeName = "rgba";
+
             material.minSize = 2;
             material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
 
             viewer.scene.addPointCloud(pointcloud);
-            viewer.fitToScreen();
+            // viewer.fitToScreen();
             viewer.setClassifications(interest_scheme)
         });
 
     </script>
 
-    <script type="module">
-
-        // // import * as THREE from "../libs/three.js/build/three.module.js";
-
-        // window.setAllScheme = function () {
-        //     viewer.setClassifications(interest_scheme);
-        // };
-
-
-		// window.setDefaultScheme = function(){
-		// 	viewer.setClassifications(Potree.ClassificationScheme.DEFAULT);
-		// }
-
-
-
-        // window.setTreeScheme = function () {
-        //     viewer.setClassifications({
-        //         5: { visible: true, name: 'trees', color: [0.0, 1.0, 0.0, 1.0] },
-        //         DEFAULT: { visible: false, name: 'other', color: [0.0, 0.0, 0.0, 1.0] },
-        //     });
-        // }
-
-        // // window.setRandomScheme = function () {
-        // //     const scheme = {};
-
-        // //     for (let i = 0; i < 32; i++) {
-        // //         scheme[i] = { visible: true, name: `random:_${i}`, color: [Math.random(), Math.random(), Math.random(), 1.0] };
-        // //     }
-
-        // //     viewer.setClassifications(scheme);
-        // // }
-        
-    </script>
-
-
 </body>
+
 
 </html>

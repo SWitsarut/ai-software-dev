@@ -21,38 +21,50 @@ const PORT: number = 8080;
 const stripeKey = process.env.STRIPE_PRIVATE || "";
 const stripe = new Stripe(stripeKey);
 
+// If you're using Express.js on your backend
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  next();
+});
+
 // Serve static files
 app.set('views', "views");
 app.set('view engine', 'ejs');
 app.use("/potree", express.static("public"));
 
 
-app.get('/', (req, res) => {
-  res.send(`
-    <form id="dataForm" action="/" method="POST">
-        <input type="hidden" name="data" id="dataInput">
-        <button type="button" onclick="submitForm('14')">Load Data 14</button>
-        <button type="button" onclick="submitForm('out')">Load Data out</button>
-    </form>
-
-     <script>
-        function submitForm(dataValue) {
-            document.getElementById("dataInput").value = dataValue;
-            document.getElementById("dataForm").submit();
-        }
-    </script>
-    `)
-})
-
 app.post('/', (req, res) => {
-  const dataValue = "point_cloud/" + req.body.data
-  console.log(dataValue)
+  const dataValue =  req.body.data
+
+  // console.log(dataValue)
+  // Parse the selected labels from the request body
+  let selectedLabelsArray = []; 
+
+  try {
+    if (req.body.selectedLabels) {
+      const parsedLabels = JSON.parse(req.body.selectedLabels);
+      console.log(parsedLabels)
+      if (Array.isArray(parsedLabels) && parsedLabels.length > 0) {
+        selectedLabelsArray = parsedLabels;
+      }
+    }
+  } catch (err) {
+    console.error("Error parsing selectedLabels:", err);
+  }
+
+
   const data = {
     data: dataValue,
     libpath: `http://localhost:${PORT}/potree`,
-    interest_scheme: visible_label([23, 24, 12, 1])
+    interest_scheme: visible_label(selectedLabelsArray)
   }
-  res.render('index', data);
+  if (req.body.data.split('/').length == 1) {
+    res.render('index', data);
+  } else {
+    res.render('special', data);
+  }
 }
 );
 

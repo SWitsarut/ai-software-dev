@@ -45,7 +45,7 @@ const SideBar: React.FC<SideBarProps> = ({ navigate,options }) => {
             elevation={2}
             sx={{
                 height: '100vh',
-                width: open ? '240px' : '64px', // Standard Material UI widths
+                width: open ? '240px' : '64px',
                 overflowX: 'hidden',
                 position: 'sticky',
                 top: 0,

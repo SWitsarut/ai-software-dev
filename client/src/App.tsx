@@ -1,63 +1,63 @@
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import SideBar, { SideBarItemProps } from "./components/sidebar/SideBar";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Box } from "@mui/material";
 import Own from "./pages/Own";
-// import Graph from "./pages/Graph";
-import HomeIcon from '@mui/icons-material/Home';
-import EqualizerIcon from '@mui/icons-material/Equalizer';
-import PersonIcon from '@mui/icons-material/Person';
-// import ProtectedRoute from "./components/ProtectedRoute";
+import HomeIcon from "@mui/icons-material/Home";
+import PersonIcon from "@mui/icons-material/Person";
 import { useAuth } from "./hooks/useAuth";
 import ProtectedRoute from "./components/Auth/ProtectedRoute";
-import Graph from "./components/Page";
 
 // Create an initial set of routes for type safety
 export const baseOptions: SideBarItemProps[] = [
-  { name: 'Dashboard', path: '/', icon: <HomeIcon />, element: <Index /> },
-  // { name: 'Statistics', path: '/graph', icon: <EqualizerIcon />, element: <Graph /> },
+  { name: "Dashboard", path: "/", icon: <HomeIcon />, element: <Index /> },
 ];
 
 // Protected routes that require authentication
 export const protectedOptions: SideBarItemProps[] = [
-  { name: 'Own', path: '/own', icon: <PersonIcon />, element: <Own /> },
+  { name: "Own", path: "/own", icon: <PersonIcon />, element: <Own /> },
 ];
+
+export const protectedAdminOptions: SideBarItemProps[] = [
+  { name: "Own", path: "/admin/user", icon: <PersonIcon />, element: <Own /> },
+]
 
 function App() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  const { isAuthenticated, user } = useAuth();
 
   // Combine public and protected routes based on authentication status
   const options = [
     ...baseOptions,
-    ...(isAuthenticated ? protectedOptions : [])
+    ...(isAuthenticated ? protectedOptions : []),
   ];
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
-      <SideBar navigate={navigate} options={options} />
+    <Box sx={{ display: "flex", height: "100vh" }}>
+      {/* Render Sidebar only if not on Index page */}
+      {<SideBar navigate={navigate} options={options} />}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          overflow: 'auto',
-          backgroundColor: 'background.default',
+          overflow: "auto",
+          backgroundColor: "background.default",
           p: 3,
-          minHeight: '100vh',
+          minHeight: "100vh",
         }}
       >
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* <Route path="/graph" element={<Graph />} /> */}
           {/* Protected route - Only accessible when authenticated */}
-          <Route 
-            path="/own" 
+          <Route
+            path="/own"
             element={
               <ProtectedRoute>
                 <Own />
               </ProtectedRoute>
-            } 
+            }
           />
           <Route path="*" element={<NotFound />} />
         </Routes>
