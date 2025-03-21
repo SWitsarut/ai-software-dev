@@ -4,6 +4,7 @@ import cors from "cors";
 import Stripe from "stripe";
 import { visible_label } from './aviable_label';
 import auth_router from './auth'
+import upload_data from './point_cloud/upload_data'
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 const app = express();
@@ -14,12 +15,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/auth', auth_router)
-// app.use('/user')
+
+app.use('/upload',upload_data)
 
 const PORT: number = 8080;
 
 const stripeKey = process.env.STRIPE_PRIVATE || "";
-const stripe = new Stripe(stripeKey);
+// const stripe = new Stripe(stripeKey);
 
 // If you're using Express.js on your backend
 app.use(function (req, res, next) {
@@ -29,11 +31,9 @@ app.use(function (req, res, next) {
   next();
 });
 
-// Serve static files
 app.set('views', "views");
 app.set('view engine', 'ejs');
 app.use("/potree", express.static("public"));
-
 
 app.post('/', (req, res) => {
   const dataValue =  req.body.data
@@ -68,39 +68,39 @@ app.post('/', (req, res) => {
 }
 );
 
-app.post("/checkout", async (_, res) => {
+// app.post("/checkout", async (_, res) => {
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "payment",
-    line_items: [
-      {
-        price_data: {
-          currency: "thb",
-          product_data: {
-            name: "item1"
-          },
-          unit_amount: 400
-        },
-        quantity: 5
-      }, {
-        price_data: {
-          currency: "thb",
-          product_data: {
-            name: "item2"
-          },
-          unit_amount: 200
-        },
-        quantity: 1
-      }
-    ],
-    success_url: `http://localhost/success.html`,
-    cancel_url: `http://localhost/cancel.html`,
-  })
-  console.log(session)
-  res.json(session)
+//   const session = await stripe.checkout.sessions.create({
+//     payment_method_types: ["card"],
+//     mode: "payment",
+//     line_items: [
+//       {
+//         price_data: {
+//           currency: "thb",
+//           product_data: {
+//             name: "item1"
+//           },
+//           unit_amount: 400
+//         },
+//         quantity: 5
+//       }, {
+//         price_data: {
+//           currency: "thb",
+//           product_data: {
+//             name: "item2"
+//           },
+//           unit_amount: 200
+//         },
+//         quantity: 1
+//       }
+//     ],
+//     success_url: `http://localhost/success.html`,
+//     cancel_url: `http://localhost/cancel.html`,
+//   })
+//   console.log(session)
+//   res.json(session)
 
-})
+// })
 
 
 

@@ -107,6 +107,18 @@ const DataForm: React.FC<DataFormProps> = ({
         </Button>
         <Button
           startIcon={<DataIcon />}
+          onClick={() => submitForm('14_new')}
+        >
+          Load Data 14_new
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('14_single')}
+        >
+          Load Data 14_single
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
           onClick={() => submitForm('03/1')}
         >
           Load Data 03

@@ -58,75 +58,19 @@ print('KDTree_path_out dir:',KDTree_path_out)
 print('proj_path dir:',proj_path)
 print('velodyne dir:',pc_path)
 print('\n\n')
-# np.set_printoptions(threshold=np.inf, suppress=True)
 
 
-# for scan_id in tqdm(scan_list, desc="Processing scans", ncols=80):
-#     # print('preparing',scan_id)
-#     points = DP.load_pc_kitti(join(dataset_path, scan_id))
-#     # print('\n\n\n\point',points)
-#     sub_points =points
-#     sub_points = DP.grid_sub_sampling(points, grid_size=0.06)
-#     # print('sub_points',sub_points.shape)
-#     # sub_points = sub_points[np.isfinite(sub_points).all(axis=1)]
-#     max_float32 = np.finfo(np.float32).max
-#     min_float32 = np.finfo(np.float32).min
-
-#     # Replace inf with the largest float32 value and -inf with the smallest float32 value
-#     sub_points[np.isinf(sub_points)] = np.where(sub_points > 0, max_float32, min_float32)
-#     print('sub_points',sub_points)
-#     # print('sub_points',sub_points.shape)
-
-#     search_tree = KDTree(sub_points)
-#     # print('search_tree',search_tree.data)
-
-#     proj_inds = np.squeeze(search_tree.query(points, return_distance=False))
-#     proj_inds = proj_inds.astype(np.int32)
-#     KDTree_save = join(KDTree_path_out, str(scan_id[:-4]) + '.pkl')
-#     proj_save = join(proj_path, str(scan_id[:-4]) + '_proj.pkl')
-#     np.save(join(pc_path, scan_id)[:-4], sub_points)
-#     with open(KDTree_save, 'wb') as f:
-#         pickle.dump(search_tree, f)
-#     with open(proj_save, 'wb') as f:
-#         pickle.dump([proj_inds], f)
 for scan_id in tqdm(scan_list, desc="Processing scans", ncols=80):
-# Load the point cloud
     points = DP.load_pc_kitti(join(dataset_path, scan_id))
-
-    # Perform grid subsampling
     sub_points = DP.grid_sub_sampling(points, grid_size=0.06)
-
-    # Replace inf and -inf with the largest and smallest float32 values
-    max_float32 = np.finfo(np.float32).max
-    min_float32 = np.finfo(np.float32).min
-    inf_mask = np.isinf(sub_points)  # Create a mask for inf values
-
-    sub_points[inf_mask] = np.where(sub_points[inf_mask] > 0, max_float32, min_float32)
-
-    # Print the shape or check values to ensure the process is correct
-    # print(f"Processed {scan_id}, sub_points shape: {sub_points.shape}")
-
-    # Build the KDTree with the subsampled points
     search_tree = KDTree(sub_points)
-
-    # Query the original points (if that's the intended behavior)
     proj_inds = np.squeeze(search_tree.query(points, return_distance=False))
-
-    # Ensure indices are integers
     proj_inds = proj_inds.astype(np.int32)
-
-    # Save the KDTree and projection indices
     KDTree_save = join(KDTree_path_out, f"{scan_id[:-4]}.pkl")
     proj_save = join(proj_path, f"{scan_id[:-4]}_proj.pkl")
-
-    # Save the subsampled points to a .npy file
     np.save(join(pc_path, scan_id[:-4]), sub_points)
-
-    # Save the KDTree and projection indices to pickle files
     with open(KDTree_save, 'wb') as f:
         pickle.dump(search_tree, f)
 
     with open(proj_save, 'wb') as f:
         pickle.dump([proj_inds], f)
-
-    # print(f"Finished processing {scan_id}")

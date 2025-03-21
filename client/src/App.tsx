@@ -8,10 +8,12 @@ import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
 import { useAuth } from "./hooks/useAuth";
 import ProtectedRoute from "./components/Auth/ProtectedRoute";
+import FileUpload from "./pages/FileUpload";
 
 // Create an initial set of routes for type safety
 export const baseOptions: SideBarItemProps[] = [
   { name: "Dashboard", path: "/", icon: <HomeIcon />, element: <Index /> },
+  { name: "Upload file", path: 'upload', element: <FileUpload /> }
 ];
 
 // Protected routes that require authentication
@@ -50,6 +52,7 @@ function App() {
       >
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/upload" element={<FileUpload />} />
           {/* Protected route - Only accessible when authenticated */}
           <Route
             path="/own"

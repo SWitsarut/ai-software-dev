@@ -20,7 +20,6 @@ const UserSchema = new mongoose.Schema(
         phoneNumber: {
             type: String,
             required: true,
-            // unique: true removed
         },
         email: {
             type: String,

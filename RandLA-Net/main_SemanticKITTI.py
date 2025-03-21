@@ -12,7 +12,7 @@ import os, argparse, pickle
 class SemanticKITTI:
     def __init__(self, test_id):
         self.name = 'SemanticKITTI'
-        self.dataset_path = '/data/semantic_kitti/dataset/sequences_0.06'
+        self.dataset_path = './data/semantic_kitti/dataset/sequences_0.06'
         self.label_to_names = {0: 'unlabeled',
                                1: 'car',
                                2: 'bicycle',
@@ -32,7 +32,8 @@ class SemanticKITTI:
                                16: 'trunk',
                                17: 'terrain',
                                18: 'pole',
-                               19: 'traffic-sign'}
+                               19: 'traffic-sign'
+                               }
         self.num_classes = len(self.label_to_names)
         self.label_values = np.sort([k for k, v in self.label_to_names.items()])
         self.label_to_idx = {l: i for i, l in enumerate(self.label_values)}
@@ -162,25 +163,28 @@ class SemanticKITTI:
         gen_function, gen_types, gen_shapes = self.get_batch_gen('training')
         gen_function_val, _, _ = self.get_batch_gen('validation')
         gen_function_test, _, _ = self.get_batch_gen('test')
-
+        
+        print('Initiating input pipelines 1')
         self.train_data = tf.data.Dataset.from_generator(gen_function, gen_types, gen_shapes)
         self.val_data = tf.data.Dataset.from_generator(gen_function_val, gen_types, gen_shapes)
         self.test_data = tf.data.Dataset.from_generator(gen_function_test, gen_types, gen_shapes)
 
+        print('Initiating input pipelines 2')
         self.batch_train_data = self.train_data.batch(cfg.batch_size)
         self.batch_val_data = self.val_data.batch(cfg.val_batch_size)
         self.batch_test_data = self.test_data.batch(cfg.val_batch_size)
-
+        
+        print('Initiating input pipelines 3')
         map_func = self.get_tf_mapping2()
-
+        print('Initiating input pipelines 4')
         self.batch_train_data = self.batch_train_data.map(map_func=map_func)
         self.batch_val_data = self.batch_val_data.map(map_func=map_func)
         self.batch_test_data = self.batch_test_data.map(map_func=map_func)
-
+        print('Initiating input pipelines 5')
         self.batch_train_data = self.batch_train_data.prefetch(cfg.batch_size)
         self.batch_val_data = self.batch_val_data.prefetch(cfg.val_batch_size)
         self.batch_test_data = self.batch_test_data.prefetch(cfg.val_batch_size)
-
+        print('Initiating input pipelines 6')
         iter = tf.data.Iterator.from_structure(self.batch_train_data.output_types, self.batch_train_data.output_shapes)
         self.flat_inputs = iter.get_next()
         self.train_init_op = iter.make_initializer(self.batch_train_data)
@@ -204,7 +208,7 @@ if __name__ == '__main__':
     test_area = FLAGS.test_area
     dataset = SemanticKITTI(test_area)
     dataset.init_input_pipeline()
-
+    print('init_input_pipeline done!')
     if Mode == 'train':
         model = Network(dataset, cfg)
         model.train(dataset)
@@ -238,4 +242,3 @@ if __name__ == '__main__':
                 labels = flat_inputs[17]
                 Plot.draw_pc_sem_ins(pc_xyz[0, :, :], labels[0, :])
                 Plot.draw_pc_sem_ins(sub_pc_xyz[0, :, :], labels[0, 0:np.shape(sub_pc_xyz)[1]])
-

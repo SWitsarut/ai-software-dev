@@ -1,13 +1,18 @@
 import argparse
 import os
+import subprocess
 import numpy as np
 import laspy
-
+from tqdm import tqdm
+import requests
 
 parser = argparse.ArgumentParser(description="Convert bin and label to las file")
 parser.add_argument('--input', type=str, required=True, help='Folder path containing point clouds')
 parser.add_argument('--label', type=str, default=None, help='Folder path for label files')
-parser.add_argument('--output', type=str, default=None, help='Output folder for processed data')
+parser.add_argument('--name', type=str, default=None, help='Output name for processed data')
+# parser.add_argument('--name', type=str, default=None, help='Output name for processed data')
+parser.add_argument('-s', action='store_true', help="Enable split mode")
+
 FLAGS = parser.parse_args()
 
 # Load KITTI point cloud
@@ -63,23 +68,29 @@ label_mapping = {
 # Paths from command-line arguments
 pc_path = FLAGS.input
 label_path = FLAGS.label
-las_output_path = FLAGS.output
+las_output_path = f"../server/public/point_cloud/{FLAGS.name}/las"
+potree_out_path = f"../server/public/point_cloud/{FLAGS.name}"
+
+
 
 if os.path.isdir(pc_path):  # If the input path is a directory
     # Create output directory if it doesn't exist
-    print('here')
+    print(pc_path,'is dir')
+    
     os.makedirs(las_output_path, exist_ok=True)
-    files =os.listdir(pc_path)
+    files_pc =os.listdir(pc_path)
+    files_label = os.listdir(label_path)
+    files = files_pc if len(files_pc) < len(files_label) else files_label
     print(len(files))
-    for file in files:
-        print(file)
+    for file in tqdm(files, desc="Processing Files", unit="file"):
+        # print(file)
         pc_file = os.path.join(pc_path, file)
         if pc_file.endswith('.bin'):  # Only process .bin files
-            print(f"Processing file: {pc_file}")
+            # print(f"Processing file: {pc_file}")
             xyz, intensity = load_pc_kitti(pc_file)
 
             label_file = os.path.join(label_path, file.replace('.bin', '.label'))
-            print(file,label_file)
+            # print(file,label_file)
             labels = load_labels(label_file)
 
             # Ensure label size matches point cloud size
@@ -89,7 +100,8 @@ if os.path.isdir(pc_path):  # If the input path is a directory
             classification = np.vectorize(lambda x: label_mapping.get(x, 0))(labels)
 
             # Create LAS file
-            header = laspy.LasHeader(point_format=1, version="1.2")  # Point format 1 includes Intensity
+            # header = laspy.LasHeader(point_format=1, version="1.2")  # Point format 1 includes Intensity
+            header = laspy.LasHeader(point_format=1, version="1.4")
             las = laspy.LasData(header)
 
             # Assign values
@@ -102,7 +114,7 @@ if os.path.isdir(pc_path):  # If the input path is a directory
             las_file_path = os.path.join(las_output_path, file.replace('.bin', '.las'))
             las.write(las_file_path)  # Save to LAS file
 
-            print(f"LAS file saved: {las_file_path}")
+            # print(f"LAS file saved: {las_file_path}")
 else:
     # Process single file if the input path is not a directory
     xyz, intensity = load_pc_kitti(pc_path)
@@ -128,6 +140,23 @@ else:
     # Save to file
     las.write(las_output_path)
 
-    print(f"LAS file saved: {las_output_path}")
+    # print(f"LAS file saved: {las_output_path}")
 
-print('done')
+print("Conversion done!")
+
+if FLAGS.s:
+    las_files = os.listdir(las_output_path)
+    for i in range(len(las_files)):
+        subprocess.run([
+            "./PotreeConverter/PotreeConverter.exe",
+            "-i", os.path.join(las_output_path, las_files[i]),
+            "-o", os.path.join(potree_out_path, str(i))  # Convert i to a string
+        ])
+else:
+    potree_out_path = os.path.join(las_output_path, "potree_output")  # Define output path
+    subprocess.run([
+        "./PotreeConverter/PotreeConverter.exe",
+        "-i", las_output_path,
+        "-o", potree_out_path
+    ])
+    

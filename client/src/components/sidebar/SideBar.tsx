@@ -26,7 +26,7 @@ interface SideBarProps {
 export interface SideBarItemProps {
     name: string;
     path: string;
-    icon: ReactElement;
+    icon?: ReactElement;
     element: ReactElement;
 }
 

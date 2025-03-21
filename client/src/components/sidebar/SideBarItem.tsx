@@ -11,7 +11,7 @@ import { NavigateFunction } from "react-router-dom";
 
 interface SideBarItemProps {
   name: string;
-  icon: ReactElement;
+  icon?: ReactElement;
   navigate: NavigateFunction;
   path: string;
   isActive: boolean;
