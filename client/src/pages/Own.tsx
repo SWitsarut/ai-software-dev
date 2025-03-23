@@ -101,9 +101,9 @@ const DataForm: React.FC<DataFormProps> = ({
       >
         <Button
           startIcon={<DataIcon />}
-          onClick={() => submitForm('14')}
+          onClick={() => submitForm('14_spacial/0')}
         >
-          Load Data 14
+          Load Data 14_spacial
         </Button>
         <Button
           startIcon={<DataIcon />}
@@ -125,10 +125,31 @@ const DataForm: React.FC<DataFormProps> = ({
         </Button>
         <Button
           startIcon={<DataIcon />}
+          onClick={() => submitForm('08_pred')}
+          // endIcon={<SendIcon />}
+        >
+          08_pred
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('08_pred')}
+          // endIcon={<SendIcon />}
+        >
+          08_pred
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('08_label')}
+          // endIcon={<SendIcon />}
+        >
+          08_label
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
           onClick={() => submitForm('out')}
           // endIcon={<SendIcon />}
         >
-          Load Data out
+          old prediction
         </Button>
       </ButtonGroup>
 

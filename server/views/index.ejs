@@ -61,7 +61,8 @@
 
         const interest_scheme = <%- JSON.stringify(interest_scheme) %>
 
-            console.log(interest_scheme)
+        console.log(interest_scheme)
+
         Potree.loadPointCloud(url).then(e => {
             let pointcloud = e.pointcloud;
             let material = pointcloud.material;
@@ -74,6 +75,7 @@
             // viewer.fitToScreen();
             viewer.setClassifications(interest_scheme)
         });
+
 
     </script>
 

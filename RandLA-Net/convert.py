@@ -72,7 +72,6 @@ las_output_path = f"../server/public/point_cloud/{FLAGS.name}/las"
 potree_out_path = f"../server/public/point_cloud/{FLAGS.name}"
 
 
-
 if os.path.isdir(pc_path):  # If the input path is a directory
     # Create output directory if it doesn't exist
     print(pc_path,'is dir')
@@ -80,19 +79,19 @@ if os.path.isdir(pc_path):  # If the input path is a directory
     os.makedirs(las_output_path, exist_ok=True)
     files_pc =os.listdir(pc_path)
     files_label = os.listdir(label_path)
-    files = files_pc if len(files_pc) < len(files_label) else files_label
-    print(len(files))
-    for file in tqdm(files, desc="Processing Files", unit="file"):
-        # print(file)
+    files_label = files_label[:1]
+    print(len(files_label),files_label)
+    files_length = min(len(files_pc), len(files_label))  # Get the minimum length
+    print('files_length',files_length)
+    for i in tqdm(range(files_length), desc="Processing Files", unit="file"):
+        file = files_pc[i] 
         pc_file = os.path.join(pc_path, file)
         if pc_file.endswith('.bin'):  # Only process .bin files
-            # print(f"Processing file: {pc_file}")
             xyz, intensity = load_pc_kitti(pc_file)
 
             label_file = os.path.join(label_path, file.replace('.bin', '.label'))
-            # print(file,label_file)
             labels = load_labels(label_file)
-
+            # print('labels',labels)
             # Ensure label size matches point cloud size
             assert xyz.shape[0] == labels.shape[0], f"Mismatch between points and labels for file {file}"
 
@@ -119,6 +118,7 @@ else:
     # Process single file if the input path is not a directory
     xyz, intensity = load_pc_kitti(pc_path)
     labels = load_labels(label_path)
+    print('labels',labels)
 
     # Ensure label size matches point cloud size
     assert xyz.shape[0] == labels.shape[0], "Mismatch between points and labels!"
@@ -126,9 +126,9 @@ else:
     # Map labels to LAS-compatible classification
     classification = np.vectorize(lambda x: label_mapping.get(x, 0))(labels)
 
-    # Create LAS file
-    header = laspy.LasHeader(point_format=1, version="1.2")  # Point format 1 includes Intensity
+    header = laspy.LasHeader(point_format=1, version="1.4")
     las = laspy.LasData(header)
+
 
     # Assign values
     las.x = xyz[:, 0]
@@ -153,7 +153,8 @@ if FLAGS.s:
             "-o", os.path.join(potree_out_path, str(i))  # Convert i to a string
         ])
 else:
-    potree_out_path = os.path.join(las_output_path, "potree_output")  # Define output path
+    print('here')
+    # potree_out_path = os.path.join(las_output_path, "potree_output")  # Define output path
     subprocess.run([
         "./PotreeConverter/PotreeConverter.exe",
         "-i", las_output_path,

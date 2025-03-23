@@ -1,6 +1,4 @@
-import { Typography, Box, Card, CardContent, Stack } from '@mui/material';
-import PeopleIcon from '@mui/icons-material/People';
-import { AttachMoney, BarChart } from '@mui/icons-material';
+import { Typography, Box, Card, CardContent } from '@mui/material';
 import Page from '../components/Page';
 
 function Index() {
@@ -39,7 +37,7 @@ function Index() {
             <source src="https://semantic-kitti.org/assets/hero_video.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          <Box sx={{ backgroundColor: 'black',position:'absolute' }}></Box>
+          <Box sx={{ backgroundColor: 'black', position: 'absolute' }}></Box>
         </Card>
         <Card>
           <CardContent>

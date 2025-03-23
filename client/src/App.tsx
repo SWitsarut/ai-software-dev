@@ -12,23 +12,23 @@ import FileUpload from "./pages/FileUpload";
 
 // Create an initial set of routes for type safety
 export const baseOptions: SideBarItemProps[] = [
-  { name: "Dashboard", path: "/", icon: <HomeIcon />, element: <Index /> },
-  { name: "Upload file", path: 'upload', element: <FileUpload /> }
+  { name: "Dashboard", path: "/", icon: <HomeIcon />},
+  { name: "Upload file", path: 'upload'},
 ];
 
 // Protected routes that require authentication
 export const protectedOptions: SideBarItemProps[] = [
-  { name: "Own", path: "/own", icon: <PersonIcon />, element: <Own /> },
+  { name: "Own", path: "/own", icon: <PersonIcon />},
 ];
 
 export const protectedAdminOptions: SideBarItemProps[] = [
-  { name: "Own", path: "/admin/user", icon: <PersonIcon />, element: <Own /> },
+  { name: "Own", path: "/admin/user", icon: <PersonIcon />},
 ]
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   // Combine public and protected routes based on authentication status
   const options = [
@@ -53,7 +53,6 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/upload" element={<FileUpload />} />
-          {/* Protected route - Only accessible when authenticated */}
           <Route
             path="/own"
             element={

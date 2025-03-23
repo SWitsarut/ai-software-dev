@@ -28,34 +28,52 @@
     <script src="<%= libpath %>/libs/jstree/jstree.js"></script>
     <script src="<%= libpath %>/build/potree/potree.js"></script>
     <script src="<%= libpath %>/libs/plasio/js/laslaz.js"></script>
-
+    <script>
+        let currentData = "<%= data %>"; // Example: "08/0"
+    
+        function submitForm() {
+            try {
+                const str = currentData.split('/');
+                if (str.length < 2) {
+                    console.error("Invalid data format:", str);
+                    return;
+                }
+    
+                let int = parseInt(str[1], 10) || 0; // Convert to integer
+                int += 1; // Increment dataset index
+    
+                currentData = `${str[0]}/${int}`; // Update global data reference
+                const newUrl = `<%= libpath %>/point_cloud/${currentData}/metadata.json`;
+    
+                console.log("Loading new dataset:", newUrl);
+    
+                // Load new point cloud
+                Potree.loadPointCloud(newUrl).then(e => {
+                    let pointcloud = e.pointcloud;
+                    let material = pointcloud.material;
+    
+                    material.minSize = 2;
+                    material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+                    viewer.scene.removePointCloud()
+                    viewer.scene.addPointCloud(pointcloud);
+                    viewer.fitToScreen();
+                });
+    
+            } catch (error) {
+                console.error("Error in submitForm:", error);
+            }
+        }
+    </script>
+    
+    
     <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
-        <div id="potree_render_area"
-            style="background-image: url('https://p325k7wa.twic.pics/high/dragon-ball/dragonball-xenoverse-2/00-page-setup/dbxv2_game-thumbnail.jpg?twic=v1/resize=760/step=10/quality=80');">
-
+        <div id="potree_render_area">
             <span style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10000">
                 <form id="dataForm" action="/" method="POST">
-                    <input type="hidden" name="data" id="dataInput">
-                    <input type="hidden" name="selectedLabels" id="selectedLabels">
                     <button type="button" onclick="submitForm()">Load Next</button>
                 </form>
 
-                <script>
-                    const scheme = JSON.stringify(<%- JSON.stringify(interest_scheme) %>)
-
-
-                    const number = scheme.map((element) => (element[,0]))
-                    console.log(number)
-
-                    function submitForm() {
-                        const str = "<%= data %>".split('/');
-                        const int = parseInt(str[1]) + 100;
-                        const newStr = str[0] + '/' + int.toString();
-                        document.getElementById("dataInput").value = newStr;
-                        document.getElementById("selectedLabels").value = numbers
-                        document.getElementById("dataForm").submit();
-                    }
-                </script>
+                
             </span>
         </div>
         <div id="potree_sidebar_container"> </div>
@@ -83,7 +101,7 @@
 
         const interest_scheme = <%- JSON.stringify(interest_scheme) %>
 
-            console.log(interest_scheme)
+        console.log(interest_scheme)
         Potree.loadPointCloud(url).then(e => {
             let pointcloud = e.pointcloud;
             let material = pointcloud.material;
@@ -98,34 +116,7 @@
         });
 
     </script>
-    <script type="module">
 
-        import * as THREE from "<%= libpath %>/libs/three.js/build/three.module.js";
-
-        window.setDefaultScheme = function () {
-            viewer.setClassifications(Potree.ClassificationScheme.DEFAULT);
-        }
-
-        window.setTreeScheme = function () {
-            console.log(viewer.scene)
-            viewer.scene.pointclouds = []
-            // viewer.setClassifications({
-            //     5: { visible: true, name: 'trees', color: [0.0, 1.0, 0.0, 1.0] },
-            //     DEFAULT: { visible: false, name: 'other', color: [0.0, 0.0, 0.0, 1.0] },
-            // });
-        }
-
-        window.setRandomScheme = function () {
-            const scheme = {};
-
-            for (let i = 0; i < 32; i++) {
-                scheme[i] = { visible: true, name: `random:_${i}`, color: [Math.random(), Math.random(), Math.random(), 1.0] };
-            }
-
-            viewer.setClassifications(scheme);
-        }
-
-    </script>
 </body>
 
 
