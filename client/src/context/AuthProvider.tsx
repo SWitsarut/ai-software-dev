@@ -1,13 +1,14 @@
 import React, { createContext, useState, ReactNode, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
 
 // Types
-interface User {
+export interface User {
     id: string;
+    userId:string;
     email: string;
     name: string;
-    role: string
-    // Add any other user properties you need
+    role: string;
+    avatarPath: string;
 }
 
 // Define response types
@@ -16,7 +17,7 @@ interface AuthResponse {
     user: User;
 }
 
-interface MeResponse {
+export interface MeResponse {
     user: User;
 }
 
@@ -34,7 +35,8 @@ export interface AuthContextType {
 }
 
 export interface RegisterData {
-    userId: string;
+    id: string;
+    userId:string;
     name: string;
     phoneNumber: string;
     email: string;
@@ -49,7 +51,8 @@ interface AuthProviderProps {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // API URL - replace with your actual API endpoint
-const API_URL = 'http://localhost:8080';
+export const API_URL = 'http://localhost:8080';
+
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -68,9 +71,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             try {
                 // Configure axios to use the token
                 setAuthHeader(token);
-                
+
                 // Verify token with backend
-                const response = await axios.get<MeResponse>(`${API_URL}/auth/me`);
+                const response = await axios.get<MeResponse>(`/auth/me`);
                 setUser(response.data.user);
                 setIsLoading(false);
             } catch (err) {
@@ -98,15 +101,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const login = async (userId: string, password: string): Promise<string> => {
         setIsLoading(true);
         setError(null);
-        
+
         try {
-            const response = await axios.post<AuthResponse>(`${API_URL}/auth/login`, {
+            const response = await axios.post<AuthResponse>(`/auth/login`, {
                 userId,
                 password
             });
-            
+
             const { accessToken, user } = response.data;
-            
+
             // Save token to localStorage
             localStorage.setItem('authToken', accessToken);
             setToken(accessToken);
@@ -125,12 +128,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const register = async (userData: RegisterData): Promise<string> => {
         setIsLoading(true);
         setError(null);
-        
+
         try {
-            const response = await axios.post<AuthResponse>(`${API_URL}/auth/register`, userData);
-            
+            const response = await axios.post<AuthResponse>(`/auth/register`, userData);
+
             const { accessToken, user } = response.data;
-            
+
             // Save token to localStorage
             localStorage.setItem('authToken', accessToken);
             setToken(accessToken);

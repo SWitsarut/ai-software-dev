@@ -6,8 +6,9 @@ import { secret } from "../auth";
 
 export default function authenticateToken(req: any, res: any, next: NextFunction) {
     const authHeader = req.headers['authorization'];
+    // console.log('req.headers',req.headers)
     const token = authHeader && authHeader.split(' ')[1];
-
+    // console.log('token',token)
     if (!token) {
         return res.status(401).json({ message: "Unauthorized" });
     }
@@ -21,7 +22,6 @@ export default function authenticateToken(req: any, res: any, next: NextFunction
         if (!decoded.userId) {
             return res.status(403).json({ message: "Invalid token payload" });
         }
-
         req.user = {
             userId: decoded.userId,
             role: decoded.role || 'user', // Default to 'user' if role is not in token

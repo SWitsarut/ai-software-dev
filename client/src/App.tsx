@@ -9,20 +9,26 @@ import PersonIcon from "@mui/icons-material/Person";
 import { useAuth } from "./hooks/useAuth";
 import ProtectedRoute from "./components/Auth/ProtectedRoute";
 import FileUpload from "./pages/FileUpload";
-
+import CheckOutForm from "./pages/CheckOutForm";
+import GroupsIcon from '@mui/icons-material/Groups';
+import ViewTeams from "./pages/Team/ViewTeams";
+import UserData from "./pages/User/UserData";
+import ProfileSetting from "./pages/User/Profile-setting";
 // Create an initial set of routes for type safety
 export const baseOptions: SideBarItemProps[] = [
-  { name: "Dashboard", path: "/", icon: <HomeIcon />},
-  { name: "Upload file", path: 'upload'},
+  { name: "Dashboard", path: "/", icon: <HomeIcon /> },
+  { name: "Upload file", path: 'upload' },
+  { name: "check out", path: '/checkout' },
 ];
 
 // Protected routes that require authentication
 export const protectedOptions: SideBarItemProps[] = [
-  { name: "Own", path: "/own", icon: <PersonIcon />},
+  { name: "Own", path: "/own", icon: <PersonIcon /> },
+  { name: "Teams", path: "/teams", icon: <GroupsIcon /> }
 ];
 
 export const protectedAdminOptions: SideBarItemProps[] = [
-  { name: "Own", path: "/admin/user", icon: <PersonIcon />},
+  { name: "Own", path: "/admin/user", icon: <PersonIcon /> },
 ]
 
 function App() {
@@ -53,6 +59,14 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/upload" element={<FileUpload />} />
+          <Route path="/checkout" element={<CheckOutForm />} />
+          <Route path="/profile/:id" element={<UserData />} />
+          <Route path="/profile-setting" element={<ProfileSetting />} />
+          <Route path="/teams" element={
+            <ProtectedRoute>
+              <ViewTeams />
+            </ProtectedRoute>
+          } />
           <Route
             path="/own"
             element={

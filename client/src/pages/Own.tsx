@@ -22,6 +22,7 @@ import Page from '../components/Page';
 
 // Import the labels from aviable_label.ts
 import { labels } from '../utils/avaiable_label';
+import { API_URL } from '../context/AuthProvider';
 
 interface DataFormProps {
   action?: string;
@@ -32,7 +33,7 @@ interface DataFormProps {
 }
 
 const DataForm: React.FC<DataFormProps> = ({
-  action = "http://localhost:8080",
+  action = `${API_URL}`,
   method = "POST",
   target = "_blank",
 }) => {
@@ -226,7 +227,7 @@ const App: React.FC = () => {
       <DataForm
         target="_blank"
         title="Open in New Tab"
-        action="http://localhost:8080"
+        action="${API_URL}"
         elevation={1}
       />
     </Page>

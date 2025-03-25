@@ -2,5 +2,6 @@
 !public/build
 PotreeConverter*
 public/point_cloud/*
+public/images/*
 !src/*
 uploaded

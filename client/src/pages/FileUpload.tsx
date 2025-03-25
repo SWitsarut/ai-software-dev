@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../utils/axios';
+import { API_URL } from '../context/AuthProvider';
 
 const FileUpload = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -14,7 +15,6 @@ const FileUpload = () => {
         }
 
     };
-
     // Handle file upload
     const handleUpload = async () => {
         if (!file) {
@@ -23,10 +23,10 @@ const FileUpload = () => {
         }
 
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('image', file);
 
         try {
-            const response = await axios.post('http://localhost:8080/upload', formData, {
+            const response = await axios.post(`/upload/image`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -46,7 +46,7 @@ const FileUpload = () => {
     return (
         <div>
             <h2>File Upload</h2>
-            <input type="file" onChange={handleFileChange} />
+            <input type="file" name="image" onChange={handleFileChange} />
             <button onClick={handleUpload}>Upload File</button>
 
             {message && <p style={{ color: 'green' }}>{message}</p>}

@@ -15,6 +15,7 @@ import {
 import { TransitionProps } from '@mui/material/transitions';
 import AuthContainer from './AuthContainer';
 import { useAuth } from '../../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 // Slide transition for the dialog
 const Transition = React.forwardRef(function Transition(
@@ -35,6 +36,8 @@ function AuthButton({ sidebar_open }: props) {
   const { user, isAuthenticated, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
+  const navigate = useNavigate();
+
 
   const handleOpen = (): void => {
     setOpen(true);
@@ -47,6 +50,16 @@ function AuthButton({ sidebar_open }: props) {
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
+
+
+  const handleProfile = () => {
+    navigate(`/profile/${user?.userId}`)
+    handleMenuClose()
+  }
+  const handleSettings = () => {
+    navigate('/profile-setting')
+    handleMenuClose()
+  }
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -93,7 +106,7 @@ function AuthButton({ sidebar_open }: props) {
               justifyContent: 'center',
             }}
           >
-            <Avatar />
+            <Avatar src={user?.avatarPath} />
           </ListItemIcon>
           <ListItemText
             primary="Sign In"
@@ -152,8 +165,8 @@ function AuthButton({ sidebar_open }: props) {
           horizontal: 'right',
         }}
       >
-        <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-        <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
+        <MenuItem onClick={handleProfile}>Profile</MenuItem>
+        <MenuItem onClick={handleSettings}>Settings</MenuItem>
         <MenuItem onClick={handleLogout}>Logout</MenuItem>
       </Menu>
 

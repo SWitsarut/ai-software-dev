@@ -70,6 +70,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onAuthSuccess, onSubmit, switchTo
     
     if (validateForm()) {
       setIsSubmitting(true);
+      console.log(userId,password)
       try {
         await onSubmit(userId, password);
       } catch (error: any) {

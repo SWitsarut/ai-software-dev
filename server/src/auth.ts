@@ -3,7 +3,10 @@ import bcrypt from 'bcryptjs'
 import dotenv from 'dotenv';
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { User } from "./model/user";
-import authenticateToken from "./middleware/verify";
+import authenticateToken from "./middleware/authenticateToken";
+import { uploadImage } from "./point_cloud/upload_data";
+import { StatusCodes } from "http-status-codes";
+import mongoose from "mongoose";
 
 dotenv.config();
 const router = Router()
@@ -36,9 +39,11 @@ router.get('/me', authenticateToken, async (req, res): Promise<any> => {
 
         const userResponse = {
             id: user._id,
+            userId: user.userId,
             email: user.email,
             name: user.name,
-            role: user.role
+            role: user.role,
+            avatar: user.avatar
         };
 
         res.status(200).json({ user: userResponse });
@@ -51,7 +56,7 @@ router.get('/me', authenticateToken, async (req, res): Promise<any> => {
 
 router.post("/register", async (req, res): Promise<any> => {
     const { userId, name, phoneNumber, email, password } = req.body;
-
+    // console.log('req.body', req.body)
     const errors: Record<string, string> = {};
     if (!userId) errors.userId = "Missing userId";
     if (!name) errors.name = "Missing name";
@@ -108,8 +113,7 @@ router.post("/register", async (req, res): Promise<any> => {
 
 router.post('/login', async (req, res): Promise<any> => {
     const { userId, password } = req.body;
-    console.log(userId, password);
-
+    // console.log('req.body', req.body)
     const user = await User.findOne({ userId });
     if (!user) {
         console.log('user', user);
@@ -127,6 +131,7 @@ router.post('/login', async (req, res): Promise<any> => {
     // Create a user object without sensitive info like password
     const userResponse = {
         id: user._id,
+        userId: user.userId,
         email: user.email,
         name: user.name || userId, // Fallback to userId if name isn't available
         role: user.role
@@ -139,6 +144,42 @@ router.post('/login', async (req, res): Promise<any> => {
         user: userResponse
     });
 });
+
+router.post('/update', authenticateToken, uploadImage.single('image'), async (req, res): Promise<any> => {
+    const { name } = req.body;
+    const image = req.file;
+    const { user } = req
+    // console.log(req.user?.userId)
+    // console.log(name)
+    if (!image && !name) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Need new image or new name' });
+    }
+
+
+    try {
+        if (!image && name) {
+            const newUserData = await User.findOneAndUpdate({ userId: req.user?.userId }, { name }, { new: true, runValidators: true });
+            if (!newUserData) {
+                return res.status(401).json({ error: "No user data or not updated" });
+            }
+            const userResponse = {
+                id: newUserData?._id,
+                userId: newUserData.userId,
+                email: newUserData.email,
+                name: newUserData.name, // Fallback to userId if name isn't available
+                role: newUserData.role
+            };
+
+            return res.status(StatusCodes.OK).json({ user:userResponse });
+
+        } else {
+            // Handle image upload logic here (e.g., save to cloud storage and update user)
+        }
+    } catch (error) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to update user' });
+    }
+
+})
 
 
 export default router
