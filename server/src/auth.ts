@@ -4,9 +4,9 @@ import dotenv from 'dotenv';
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { User } from "./model/user";
 import authenticateToken from "./middleware/authenticateToken";
-import { uploadImage } from "./point_cloud/upload_data";
 import { StatusCodes } from "http-status-codes";
 import mongoose from "mongoose";
+import { uploadImage } from "./middleware/file";
 
 dotenv.config();
 const router = Router()
@@ -146,35 +146,33 @@ router.post('/login', async (req, res): Promise<any> => {
 });
 
 router.post('/update', authenticateToken, uploadImage.single('image'), async (req, res): Promise<any> => {
+    console.log('here')
     const { name } = req.body;
     const image = req.file;
-    const { user } = req
-    // console.log(req.user?.userId)
-    // console.log(name)
     if (!image && !name) {
         return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Need new image or new name' });
     }
 
 
     try {
-        if (!image && name) {
-            const newUserData = await User.findOneAndUpdate({ userId: req.user?.userId }, { name }, { new: true, runValidators: true });
-            if (!newUserData) {
-                return res.status(401).json({ error: "No user data or not updated" });
-            }
-            const userResponse = {
-                id: newUserData?._id,
-                userId: newUserData.userId,
-                email: newUserData.email,
-                name: newUserData.name, // Fallback to userId if name isn't available
-                role: newUserData.role
-            };
-
-            return res.status(StatusCodes.OK).json({ user:userResponse });
-
-        } else {
-            // Handle image upload logic here (e.g., save to cloud storage and update user)
+        let filepath = undefined
+        if (image) {
+            const filename = image.filename;
+            filepath = `http://${process.env.API_HOST}:${process.env.API_PORT}/public/images/${filename}`
         }
+        const newUserData = await User.findOneAndUpdate({ userId: req.user?.userId }, { name, avatar: filepath || "" }, { new: true, runValidators: true });
+
+        const userResponse = {
+            id: newUserData?._id,
+            userId: newUserData?.userId,
+            email: newUserData?.email,
+            name: newUserData?.name,
+            role: newUserData?.role,
+            avatar: newUserData?.avatar,
+        };
+
+        return res.status(StatusCodes.OK).json({ user: userResponse });
+
     } catch (error) {
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to update user' });
     }

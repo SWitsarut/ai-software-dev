@@ -14,7 +14,6 @@ import {
   Collapse,
   IconButton
 } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
 import DataIcon from '@mui/icons-material/Storage';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';

@@ -9,7 +9,7 @@ import auth_router from './auth'
 import upload_data from './point_cloud/upload_data'
 import payments from './payments/payments'
 import users from "./userdata/get_user"
-
+import teams from "./Project/team"
 
 
 const app = express();
@@ -34,7 +34,7 @@ const PORT: number = 8080;
 
 app.set('views', "views");
 app.set('view engine', 'ejs');
-app.use("/potree", express.static("public"));
+app.use("/public", express.static("public"));
 
 
 //router
@@ -42,6 +42,8 @@ app.use('/user', users)
 app.use('/auth', auth_router)
 app.use('/', payments)
 app.use('/upload', upload_data)
+app.use('/teams',teams)
+
 
 app.post('/', (req, res) => {
   const dataValue = req.body.data
@@ -60,7 +62,7 @@ app.post('/', (req, res) => {
   }
   const data = {
     data: dataValue,
-    libpath: `http://localhost:${PORT}/potree`,
+    libpath: `http://localhost:${PORT}/public`,
     interest_scheme: visible_label(selectedLabelsArray)
   }
   if (req.body.data.split('/').length == 1) {

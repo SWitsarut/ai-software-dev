@@ -2,7 +2,7 @@ import { Container, Box, Typography, Divider } from "@mui/material";
 import ThemeToggle from "../components/ThemeToggle";
 import { ReactElement } from "react";
 
-function Graph({ children, header }: { children: ReactElement, header: string }) {
+function Page({ children, header }: { children: ReactElement, header: string }) {
     return (
         <Container maxWidth="lg">
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -17,4 +17,4 @@ function Graph({ children, header }: { children: ReactElement, header: string })
     );
 }
 
-export default Graph
+export default Page

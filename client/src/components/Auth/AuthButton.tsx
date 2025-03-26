@@ -16,7 +16,7 @@ import { TransitionProps } from '@mui/material/transitions';
 import AuthContainer from './AuthContainer';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-
+import imageLocation from '../../utils/imageLocation';
 // Slide transition for the dialog
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -72,13 +72,13 @@ function AuthButton({ sidebar_open }: props) {
 
   const onAuthSuccess = (accessToken: string) => {
     if (accessToken) {
-      console.log("JWT Token received:", accessToken);
+      // console.log("JWT Token received:", accessToken);
       setOpen(false);
     } else {
       console.error("Invalid token received.");
     }
   };
-
+  // console.log('user', user)
   return (
     <>
       {!isAuthenticated ? (
@@ -106,7 +106,7 @@ function AuthButton({ sidebar_open }: props) {
               justifyContent: 'center',
             }}
           >
-            <Avatar src={user?.avatarPath} />
+            <Avatar src={user?.avatar} />
           </ListItemIcon>
           <ListItemText
             primary="Sign In"
@@ -141,7 +141,7 @@ function AuthButton({ sidebar_open }: props) {
               justifyContent: 'center',
             }}
           >
-            <Avatar src={undefined} />
+            <Avatar src={imageLocation(user?.avatar || "")} />
           </ListItemIcon>
           <ListItemText
             primary={user?.name || "User"}

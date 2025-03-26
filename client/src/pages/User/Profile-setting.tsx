@@ -22,6 +22,7 @@ import { useAuth } from '../../hooks/useAuth'
 import axios from "../../utils/axios"
 import Loading from '../../components/Loading'
 import { User } from '../../context/AuthProvider'
+import { useNavigate } from 'react-router-dom'
 
 
 interface UpdateRes {
@@ -31,42 +32,43 @@ interface UpdateRes {
 
 function ProfileSetting() {
     const theme = useTheme();
-    const { user, setUser } = useAuth()
+    const { user, setUser, isAuthenticated } = useAuth()
     const [loading, setLoading] = useState(true)
     const [newImage, setNewImage] = useState<File | null>(null)
     const [newName, setNewName] = useState<string>(user?.name || "");
-    const [imagePreview, setImagePreview] = useState<string | null>(user?.avatarPath || null);
+    const [imagePreview, setImagePreview] = useState<string | null>(user?.avatar || null);
+    const navigate = useNavigate()
+
 
     const handleCancel = () => {
         setNewImage(null)
         setNewName(user?.name || "")
+        setImagePreview(null)
     }
+    
     const handleSave = async () => {
-        if (!newImage) {
-            const res = await axios.post<UpdateRes>(`auth/update`, {
-                name: newName
-            })
-            console.log(res?.data)
-            setUser(res?.data.user)
-        } else {
-            const formData = new FormData();
-            formData.append('image', newImage);
+        const formData = new FormData();
 
-            try {
-                const response = await axios.post<User>(`/upload/image`, formData, {
+        if (newImage) {
+            formData.append('image', newImage);
+        }
+        formData.append('name', newName);
+        try {
+            const response = await axios.post<UpdateRes>(
+                'auth/update',
+                formData,
+                {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
-                });
+                }
+            );
 
-                console.log(response.data);  // Logs the response from server
-
-            } catch (error) {
-                console.error(error);
-            }
+            console.log(response.data);
+            setUser(response.data.user);
+        } catch (error) {
+            console.error(error);
         }
-
-
     }
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,8 +83,11 @@ function ProfileSetting() {
         if (user?.name) {
             setNewName(user.name);
         }
+        if (!isAuthenticated) {
+            navigate('/')
+        }
         setLoading(false)
-    }, [user]);
+    }, [user, isAuthenticated]);
 
 
     if (loading) {
@@ -95,7 +100,7 @@ function ProfileSetting() {
         <Page header={"แก้ไข ข้อมูลผู้ใช้"}>
             <Container maxWidth="md" sx={{ py: 4 }}>
                 <Snackbar
-                    open={(user?.name !== newName && newName !== "")}
+                    open={(user?.name !== newName && newName !== "") || (newImage !== null)}
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                     sx={{ minWidth: '450px' }}
                 >

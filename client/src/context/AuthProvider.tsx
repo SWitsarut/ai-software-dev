@@ -4,11 +4,11 @@ import axios from '../utils/axios';
 // Types
 export interface User {
     id: string;
-    userId:string;
+    userId: string;
     email: string;
     name: string;
     role: string;
-    avatarPath: string;
+    avatar: string;
 }
 
 // Define response types
@@ -35,8 +35,7 @@ export interface AuthContextType {
 }
 
 export interface RegisterData {
-    id: string;
-    userId:string;
+    userId: string;
     name: string;
     phoneNumber: string;
     email: string;

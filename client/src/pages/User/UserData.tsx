@@ -18,6 +18,7 @@ import EmailIcon from '@mui/icons-material/Email'
 import PhoneIcon from '@mui/icons-material/Phone'
 import { AdminPanelSettings, Badge } from '@mui/icons-material'
 import PersonIcon from '@mui/icons-material/Person'
+import imageLocation from '../../utils/imageLocation'
 
 interface ViewUser extends User {
     UserId: string
@@ -73,7 +74,7 @@ function UserData() {
                     <Box sx={{ position: 'relative', px: 3, pb: 3, mt: -6 }}>
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} alignItems="center">
                             <Avatar
-                                src={user?.avatarPath}
+                                src={imageLocation(user?.avatar || user?.name.charAt(0) || "")}
                                 variant="rounded"
                                 sx={{
                                     width: 140,

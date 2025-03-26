@@ -14,6 +14,8 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import ViewTeams from "./pages/Team/ViewTeams";
 import UserData from "./pages/User/UserData";
 import ProfileSetting from "./pages/User/Profile-setting";
+import CreateTeam from "./pages/Team/CreateTeam";
+import TeamInfo from "./pages/Team/TeamInfo";
 // Create an initial set of routes for type safety
 export const baseOptions: SideBarItemProps[] = [
   { name: "Dashboard", path: "/", icon: <HomeIcon /> },
@@ -24,7 +26,8 @@ export const baseOptions: SideBarItemProps[] = [
 // Protected routes that require authentication
 export const protectedOptions: SideBarItemProps[] = [
   { name: "Own", path: "/own", icon: <PersonIcon /> },
-  { name: "Teams", path: "/teams", icon: <GroupsIcon /> }
+  { name: "Teams", path: "/teams", icon: <GroupsIcon /> },
+  { name: "Create Teams", path: "/teams/create", icon: <GroupsIcon /> }
 ];
 
 export const protectedAdminOptions: SideBarItemProps[] = [
@@ -33,7 +36,6 @@ export const protectedAdminOptions: SideBarItemProps[] = [
 
 function App() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { isAuthenticated } = useAuth();
 
   // Combine public and protected routes based on authentication status
@@ -62,9 +64,20 @@ function App() {
           <Route path="/checkout" element={<CheckOutForm />} />
           <Route path="/profile/:id" element={<UserData />} />
           <Route path="/profile-setting" element={<ProfileSetting />} />
+
           <Route path="/teams" element={
             <ProtectedRoute>
               <ViewTeams />
+            </ProtectedRoute>
+          } />
+          <Route path="/teams/create" element={
+            <ProtectedRoute>
+              <CreateTeam />
+            </ProtectedRoute>
+          } />
+          <Route path="/teams/id/:id" element={
+            <ProtectedRoute>
+              <TeamInfo />
             </ProtectedRoute>
           } />
           <Route
