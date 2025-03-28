@@ -42,10 +42,19 @@ class SemanticKITTI:
 
         self.seq_list = np.sort(os.listdir(self.dataset_path))
         self.test_scan_number = str(test_id)
-        self.train_list, self.val_list, self.test_list = DP.get_file_list(self.dataset_path,
-                                                                          self.test_scan_number)
-        self.train_list = DP.shuffle_list(self.train_list)
-        self.val_list = DP.shuffle_list(self.val_list)
+        # _, _, self.test_list = DP.get_file_list(self.dataset_path,self.test_scan_number)
+        # print('\n\n\n\n\n\n\n\n self.test_list',self.test_list)
+        # print('\n\n\n\n\n\n\n\n self.test_list')
+
+        pc_path = f"{self.dataset_path}/{test_id}/velodyne"
+        test_files_list = []
+        test_files_list.extend([os.path.join(pc_path, f) for f in np.sort(os.listdir(pc_path))])
+
+        print('\n\n\n\n\n\n\n\n test_files_list',test_files_list)
+        print('\n\n\n\n\n\n\n\n test_files_list')
+        self.test_list  = test_files_list
+        # self.train_list = DP.shuffle_list(self.train_list)
+        # self.val_list = DP.shuffle_list(self.val_list)
 
         self.possibility = []
         self.min_possibility = []
@@ -53,13 +62,16 @@ class SemanticKITTI:
     # Generate the input data flow
     def get_batch_gen(self, split):
         if split == 'training':
-            num_per_epoch = int(len(self.train_list) / cfg.batch_size) * cfg.batch_size
-            path_list = self.train_list
+            print('training get_batch_gen')
+            # num_per_epoch = int(len(self.train_list) / cfg.batch_size) * cfg.batch_size
+            # path_list = self.train_list
         elif split == 'validation':
-            num_per_epoch = int(len(self.val_list) / cfg.val_batch_size) * cfg.val_batch_size
-            cfg.val_steps = int(len(self.val_list) / cfg.batch_size)
-            path_list = self.val_list
+            print('validation get_batch_gen')
+            # num_per_epoch = int(len(self.val_list) / cfg.val_batch_size) * cfg.val_batch_size
+            # cfg.val_steps = int(len(self.val_list) / cfg.batch_size)
+            # path_list = self.val_list
         elif split == 'test':
+            print('test get_batch_gen')
             num_per_epoch = int(len(self.test_list) / cfg.val_batch_size) * cfg.val_batch_size * 4
             path_list = self.test_list
             for test_file_name in path_list:
@@ -78,13 +90,14 @@ class SemanticKITTI:
                     pick_idx = np.random.choice(len(pc), 1)
                     selected_pc, selected_labels, selected_idx = self.crop_pc(pc, labels, tree, pick_idx)
                 else:
+                    print('else spatially_regular_gen')
                     cloud_ind = int(np.argmin(self.min_possibility))
                     pick_idx = np.argmin(self.possibility[cloud_ind])
                     pc_path = path_list[cloud_ind]
                     pc, tree, labels = self.get_data(pc_path)
                     selected_pc, selected_labels, selected_idx = self.crop_pc(pc, labels, tree, pick_idx)
 
-                    # update the possibility of the selected pc
+                    # # update the possibility of the selected pc
                     dists = np.sum(np.square((selected_pc - pc[pick_idx]).astype(np.float32)), axis=1)
                     delta = np.square(1 - dists / np.max(dists))
                     self.possibility[cloud_ind][selected_idx] += delta
@@ -159,46 +172,39 @@ class SemanticKITTI:
     def init_input_pipeline(self):
         print('Initiating input pipelines')
         cfg.ignored_label_inds = [self.label_to_idx[ign_label] for ign_label in self.ignored_labels]
-        gen_function, gen_types, gen_shapes = self.get_batch_gen('training')
-        gen_function_val, _, _ = self.get_batch_gen('validation')
-        gen_function_test, _, _ = self.get_batch_gen('test')
+        # gen_function, gen_types, gen_shapes = self.get_batch_gen('training')
+        # gen_function_val, _, _ = self.get_batch_gen('validation')
+        gen_function_test, gen_types, gen_shapes = self.get_batch_gen('test')
 
-        self.train_data = tf.data.Dataset.from_generator(gen_function, gen_types, gen_shapes)
-        self.val_data = tf.data.Dataset.from_generator(gen_function_val, gen_types, gen_shapes)
+        # self.train_data = tf.data.Dataset.from_generator(gen_function, gen_types, gen_shapes)
+        # self.val_data = tf.data.Dataset.from_generator(gen_function_val, gen_types, gen_shapes)
         self.test_data = tf.data.Dataset.from_generator(gen_function_test, gen_types, gen_shapes)
 
-        print("\n\n\n\n\n self.train_data \n\n\n\n")
-        print(self.train_data)
-        print(self.test_data)
+        # print("\n\n\n\n\n self.train_data \n\n\n\n")
+        # print(self.train_data)
+        # print(self.test_data)
+        # print(self.val_data)
 
-        print(self.val_data)
-        print("\n\n\n\n\n self.train_data \n\n\n\n")
-        self.batch_train_data = self.train_data.batch(cfg.batch_size)
-        self.batch_val_data = self.val_data.batch(cfg.val_batch_size)
+        # print("\n\n\n\n\n self.train_data \n\n\n\n")
+        # self.batch_train_data = self.train_data.batch(cfg.batch_size)
+        # self.batch_val_data = self.val_data.batch(cfg.val_batch_size)
         self.batch_test_data = self.test_data.batch(cfg.val_batch_size)
 
         map_func = self.get_tf_mapping2()
 
-        self.batch_train_data = self.batch_train_data.map(map_func=map_func)
-        self.batch_val_data = self.batch_val_data.map(map_func=map_func)
+        # self.batch_train_data = self.batch_train_data.map(map_func=map_func)
+        # self.batch_val_data = self.batch_val_data.map(map_func=map_func)
         self.batch_test_data = self.batch_test_data.map(map_func=map_func)
 
-        self.batch_train_data = self.batch_train_data.prefetch(cfg.batch_size)
-        self.batch_val_data = self.batch_val_data.prefetch(cfg.val_batch_size)
+        # self.batch_train_data = self.batch_train_data.prefetch(cfg.batch_size)
+        # self.batch_val_data = self.batch_val_data.prefetch(cfg.val_batch_size)
         self.batch_test_data = self.batch_test_data.prefetch(cfg.val_batch_size)
 
-        iter = tf.data.Iterator.from_structure(self.batch_train_data.output_types, self.batch_train_data.output_shapes)
-        print('\n\n\n\n\n\n shape')
-        print(self.batch_train_data)
-        print(self.batch_test_data)
-        print(self.batch_val_data)
-        print('\n\n\n\n\n\n shape')
-        # print(self.batch_train_data.output_types, self.batch_train_data.output_shapes)
-        # print(self.batch_test_data.output_types, self.batch_test_data.output_shapes)
-        # print(self.batch_val_data.output_types, self.batch_val_data.output_shapes)
+        iter = tf.data.Iterator.from_structure(self.batch_test_data.output_types, self.batch_test_data.output_shapes)
+
         self.flat_inputs = iter.get_next()
-        self.train_init_op = iter.make_initializer(self.batch_train_data)
-        self.val_init_op = iter.make_initializer(self.batch_val_data)
+        # self.train_init_op = iter.make_initializer(self.batch_train_data)
+        # self.val_init_op = iter.make_initializer(self.batch_val_data)
         self.test_init_op = iter.make_initializer(self.batch_test_data)
 
 

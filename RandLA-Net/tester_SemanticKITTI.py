@@ -93,7 +93,7 @@ class ModelTester:
                 print('out of range!')
                 new_min = np.min(dataset.min_possibility)
                 log_out('Epoch {:3d}, end. Min possibility = {:.1f}'.format(epoch_ind, new_min), self.Log_file)
-                if np.min(dataset.min_possibility) > 0.7:  # 0.5
+                if np.min(dataset.min_possibility) > 0.5:  # 0.5
                     log_out(' Min possibility = {:.1f}'.format(np.min(dataset.min_possibility)), self.Log_file)
                     print('\nReproject Vote #{:d}'.format(int(np.floor(new_min))))
 

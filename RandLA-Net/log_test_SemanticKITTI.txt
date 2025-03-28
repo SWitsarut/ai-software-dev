@@ -1,0 +1,39 @@
+Epoch   0, end. Min possibility = 0.0
+Epoch   1, end. Min possibility = 0.0
+Epoch   2, end. Min possibility = 0.6
+Epoch   3, end. Min possibility = 1.0
+ Min possibility = 1.0
+08 finished
+eval accuracy: 0.8695831365646332
+mean IOU:0.3484109727271396
+Epoch   0, end. Min possibility = 0.0
+Epoch   1, end. Min possibility = 0.0
+Epoch   2, end. Min possibility = 0.4
+Epoch   3, end. Min possibility = 1.0
+ Min possibility = 1.0
+08 finished
+eval accuracy: 0.8653758639934744
+mean IOU:0.3407786255677188
+Epoch   0, end. Min possibility = 0.0
+Epoch   1, end. Min possibility = 0.0
+Epoch   2, end. Min possibility = 0.6
+Epoch   3, end. Min possibility = 1.0
+ Min possibility = 1.0
+08 finished
+eval accuracy: 0.8706392478426995
+mean IOU:0.3604724096719126
+Epoch   0, end. Min possibility = 0.0
+Epoch   1, end. Min possibility = 0.1
+Epoch   2, end. Min possibility = 0.6
+ Min possibility = 0.6
+08 finished
+eval accuracy: 0.8699437599278753
+mean IOU:0.35140763113563006
+Epoch   0, end. Min possibility = 0.0
+Epoch   1, end. Min possibility = 0.0
+Epoch   2, end. Min possibility = 0.5
+Epoch   3, end. Min possibility = 1.0
+ Min possibility = 1.0
+08 finished
+eval accuracy: 0.8723908470355901
+mean IOU:0.35481842713332723
