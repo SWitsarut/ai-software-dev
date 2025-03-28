@@ -16,15 +16,15 @@ import nearest_neighbors.lib.python.nearest_neighbors as nearest_neighbors
 
 
 class ConfigSemanticKITTI:
-    k_n = 8  # KNN
+    k_n = 16  # KNN
     num_layers = 4  # Number of layers
     num_points = 4096 * 11  # Number of input points
     num_classes = 19  # Number of valid classes
     sub_grid_size = 0.06  # preprocess_parameter
 
-    batch_size = 4  # batch_size during training
+    batch_size = 6  # batch_size during training
     val_batch_size = 1  # batch_size during validation and test
-    train_steps = 100  # Number of steps per epochs
+    train_steps = 500  # Number of steps per epochs
     val_steps = 100  # Number of validation steps per epoch
 
     sub_sampling_ratio = [4, 4, 4, 4]  # sampling ratio of random sampling at each layer
@@ -133,8 +133,7 @@ class DataProcessing:
     @staticmethod
     def get_file_list(dataset_path, test_scan_num):
         seq_list = np.sort(os.listdir(dataset_path))
-        dataset_path = dataset_path[:-3]
-        print(dataset_path)
+
         train_file_list = []
         test_file_list = []
         val_file_list = []
@@ -154,8 +153,7 @@ class DataProcessing:
         val_file_list = np.concatenate(val_file_list, axis=0)
         test_file_list = np.concatenate(test_file_list, axis=0)
         return train_file_list, val_file_list, test_file_list
-    
-	
+
     @staticmethod
     def knn_search(support_pts, query_pts, k):
         """

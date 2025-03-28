@@ -8,10 +8,10 @@ import helper_tf_util
 import time
 
 
-# def print(:
-#     f_out.write(out_str + '\n')
-#     f_out.flush()
-#     print(out_str)
+def log_out(out_str, f_out):
+    f_out.write(out_str + '\n')
+    f_out.flush()
+    print(out_str)
 
 
 class Network:
@@ -33,8 +33,6 @@ class Network:
             self.inputs['neigh_idx'] = flat_inputs[num_layers: 2 * num_layers]
             self.inputs['sub_idx'] = flat_inputs[2 * num_layers:3 * num_layers]
             self.inputs['interp_idx'] = flat_inputs[3 * num_layers:4 * num_layers]
-            print('flate_inputs', flat_inputs)
-            print(num_layers)            
             self.inputs['features'] = flat_inputs[4 * num_layers]
             self.inputs['labels'] = flat_inputs[4 * num_layers + 1]
             self.inputs['input_inds'] = flat_inputs[4 * num_layers + 2]
@@ -48,7 +46,7 @@ class Network:
             self.accuracy = 0
             self.mIou_list = [0]
             self.class_weights = DP.get_class_weights(dataset.name)
-            # self.Log_file = open('log_train_' + dataset.name + str(dataset.val_split) + '.txt', 'a')
+            self.Log_file = open('log_train_' + dataset.name + str(dataset.val_split) + '.txt', 'a')
 
         with tf.variable_scope('layers'):
             self.logits = self.inference(self.inputs, self.is_training)
@@ -147,7 +145,7 @@ class Network:
         return f_out
 
     def train(self, dataset):
-        print('****EPOCH {}****'.format(self.training_epoch))
+        log_out('****EPOCH {}****'.format(self.training_epoch), self.Log_file)
         self.sess.run(dataset.train_init_op)
         while self.training_epoch < self.config.max_epoch:
             t_start = time.time()
@@ -164,7 +162,7 @@ class Network:
                 t_end = time.time()
                 if self.training_step % 50 == 0:
                     message = 'Step {:08d} L_out={:5.3f} Acc={:4.2f} ''---{:8.2f} ms/batch'
-                    print(message.format(self.training_step, l_out, acc, 1000 * (t_end - t_start)))
+                    log_out(message.format(self.training_step, l_out, acc, 1000 * (t_end - t_start)), self.Log_file)
                 self.training_step += 1
 
             except tf.errors.OutOfRangeError:
@@ -176,7 +174,7 @@ class Network:
                     makedirs(snapshot_directory) if not exists(snapshot_directory) else None
                     self.saver.save(self.sess, snapshot_directory + '/snap', global_step=self.training_step)
                 self.mIou_list.append(m_iou)
-                print('Best m_IoU is: {:5.3f}'.format(max(self.mIou_list)))
+                log_out('Best m_IoU is: {:5.3f}'.format(max(self.mIou_list)), self.Log_file)
 
                 self.training_epoch += 1
                 self.sess.run(dataset.train_init_op)
@@ -184,7 +182,7 @@ class Network:
                 op = self.learning_rate.assign(tf.multiply(self.learning_rate,
                                                            self.config.lr_decays[self.training_epoch]))
                 self.sess.run(op)
-                print('****EPOCH {}****'.format(self.training_epoch))
+                log_out('****EPOCH {}****'.format(self.training_epoch), self.Log_file)
 
             except tf.errors.InvalidArgumentError as e:
 
@@ -246,17 +244,17 @@ class Network:
             iou_list.append(iou)
         mean_iou = sum(iou_list) / float(self.config.num_classes)
 
-        print('eval accuracy: {}'.format(val_total_correct / float(val_total_seen)))
-        print('mean IOU:{}'.format(mean_iou))
+        log_out('eval accuracy: {}'.format(val_total_correct / float(val_total_seen)), self.Log_file)
+        log_out('mean IOU:{}'.format(mean_iou), self.Log_file)
 
         mean_iou = 100 * mean_iou
-        print('Mean IoU = {:.1f}%'.format(mean_iou))
+        log_out('Mean IoU = {:.1f}%'.format(mean_iou), self.Log_file)
         s = '{:5.2f} | '.format(mean_iou)
         for IoU in iou_list:
             s += '{:5.2f} '.format(100 * IoU)
-        print('-' * len(s))
-        print(s)
-        print('-' * len(s) + '\n')
+        log_out('-' * len(s), self.Log_file)
+        log_out(s, self.Log_file)
+        log_out('-' * len(s) + '\n', self.Log_file)
         return mean_iou
 
     def get_loss(self, logits, labels, pre_cal_weights):

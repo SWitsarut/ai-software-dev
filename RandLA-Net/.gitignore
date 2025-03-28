@@ -9,3 +9,4 @@ combined
 las_out
 data_dir
 Potree*
+!tester_SemanticKITTI.py
