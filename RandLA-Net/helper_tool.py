@@ -133,7 +133,8 @@ class DataProcessing:
     @staticmethod
     def get_file_list(dataset_path, test_scan_num):
         seq_list = np.sort(os.listdir(dataset_path))
-
+        dataset_path = dataset_path[:-3]
+        print(dataset_path)
         train_file_list = []
         test_file_list = []
         val_file_list = []

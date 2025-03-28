@@ -32,7 +32,7 @@ interface DataFormProps {
 }
 
 const DataForm: React.FC<DataFormProps> = ({
-  action = `${API_URL}`,
+  action = API_URL, // Directly use the API_URL from context
   method = "POST",
   target = "_blank",
 }) => {
@@ -52,6 +52,7 @@ const DataForm: React.FC<DataFormProps> = ({
       ...value
     }))
     .filter(label => !isNaN(label.id)); // Ensure it's a valid number
+
 
   const handleLabelToggle = (labelId: number) => {
     setSelectedLabels(prev => {
@@ -99,6 +100,8 @@ const DataForm: React.FC<DataFormProps> = ({
         size="large"
         sx={{ mt: 2, mb: 2 }}
       >
+        <Box display={'flex'} flexWrap={'wrap'}>
+          
         <Button
           startIcon={<DataIcon />}
           onClick={() => submitForm('14_spacial/0')}
@@ -126,31 +129,59 @@ const DataForm: React.FC<DataFormProps> = ({
         <Button
           startIcon={<DataIcon />}
           onClick={() => submitForm('08_pred')}
-          // endIcon={<SendIcon />}
-        >
-          08_pred
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('08_pred')}
-          // endIcon={<SendIcon />}
         >
           08_pred
         </Button>
         <Button
           startIcon={<DataIcon />}
           onClick={() => submitForm('08_label')}
-          // endIcon={<SendIcon />}
         >
           08_label
         </Button>
         <Button
           startIcon={<DataIcon />}
+          onClick={() => submitForm('08_custom_out')}
+        >
+          08_custom_out docker!! wrong path!!!!
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('docker_right_path')}
+        >
+          docker_right_path
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('change_network_and_tester')}
+        >
+          change_network_and_tester
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('change_network')}
+        >
+          change_network
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('tester_change_test')}
+        >
+          tester_change_test
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('tester_change_test')}
+        >
+          edited_main
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
           onClick={() => submitForm('out')}
-          // endIcon={<SendIcon />}
         >
           old prediction
         </Button>
+  
+        </Box>
       </ButtonGroup>
 
       <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mb: 1 }}>
@@ -226,7 +257,7 @@ const App: React.FC = () => {
       <DataForm
         target="_blank"
         title="Open in New Tab"
-        action="${API_URL}"
+        action={API_URL}
         elevation={1}
       />
     </Page>

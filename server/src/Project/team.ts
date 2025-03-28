@@ -68,14 +68,14 @@ router.get('/id/:id', authenticateToken, async (req, res): Promise<any> => {
     if (!member) {
         return res.status(StatusCodes.FORBIDDEN).json({ error: "You are not a member of the team" });
     }
-
+2
     const members = await TeamsMember.find({ teamId }).populate('userId', 'name avatar');
     const teamInfo = await Teams.findById(teamId).populate('createBy', 'name')
 
     return res.status(StatusCodes.OK).json({ caller: member, members, teamInfo })
 })
 
-router.post('updata/role', authenticateToken, async (req, res): Promise<any> => {
+router.post('/update/role', authenticateToken, async (req, res): Promise<any> => {
     const { target, teamId, targetRole } = req.body
     if (!target || !teamId || !targetRole)
         return res.status(StatusCodes.BAD_REQUEST).json({ error: "Missing target,teamId or targetRole" });

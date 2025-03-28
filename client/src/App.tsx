@@ -16,6 +16,7 @@ import UserData from "./pages/User/UserData";
 import ProfileSetting from "./pages/User/Profile-setting";
 import CreateTeam from "./pages/Team/CreateTeam";
 import TeamInfo from "./pages/Team/TeamInfo";
+import Buy from "./pages/Project/Buy";
 // Create an initial set of routes for type safety
 export const baseOptions: SideBarItemProps[] = [
   { name: "Dashboard", path: "/", icon: <HomeIcon /> },
@@ -27,7 +28,6 @@ export const baseOptions: SideBarItemProps[] = [
 export const protectedOptions: SideBarItemProps[] = [
   { name: "Own", path: "/own", icon: <PersonIcon /> },
   { name: "Teams", path: "/teams", icon: <GroupsIcon /> },
-  { name: "Create Teams", path: "/teams/create", icon: <GroupsIcon /> }
 ];
 
 export const protectedAdminOptions: SideBarItemProps[] = [
@@ -78,6 +78,11 @@ function App() {
           <Route path="/teams/id/:id" element={
             <ProtectedRoute>
               <TeamInfo />
+            </ProtectedRoute>
+          } />
+          <Route path="/teams/id/:id/:buy" element={
+            <ProtectedRoute>
+              <Buy />
             </ProtectedRoute>
           } />
           <Route

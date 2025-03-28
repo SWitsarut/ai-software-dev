@@ -1,7 +1,7 @@
 from helper_tool import DataProcessing as DP
 from custom_config import ConfigSemanticKITTI as cfg
 from RandLANet import Network
-from tester_SemanticKITTI import ModelTester
+from custom_tester_SemanticKITTI import ModelTester
 import tensorflow as tf
 import numpy as np
 import os, argparse, pickle
@@ -13,6 +13,7 @@ from sklearn.neighbors import KDTree
 
 class SemanticKITTI:
     def __init__(self, test_list):
+        self.name = "SemanticKITTI"
         self.label_to_names = {0: 'unlabeled',
                                1: 'car',
                                2: 'bicycle',
@@ -41,10 +42,16 @@ class SemanticKITTI:
         self.num_classes = len(self.label_to_names)
         self.label_values = np.sort([k for k, v in self.label_to_names.items()])
         self.label_to_idx = {l: i for i, l in enumerate(self.label_values)}
+        self.ignored_labels =np.sort([0])
 
 
-        self.name = "SemanticKITTI"
+        self.val_split = '08'
+
         self.dataset_path = cfg.data_dir
+
+        self.seq_list = np.sort(os.listdir(self.dataset_path))
+
+        print('self.dataset_path',self.dataset_path)
         self.test_list = test_list
         print('\n\n\n\ntest_list',self.test_list)
         # self.test_scan_number = str(test_id)
@@ -52,16 +59,8 @@ class SemanticKITTI:
         # _, _, self.test_list = DP.get_file_list(self.dataset_path, self.test_scan_number)
         self.possibility = []
         self.min_possibility = []
-        self.ignored_labels = np.sort([0])
 
     def get_batch_gen(self):
-    
-        # num_per_epoch = int(len(self.test_list) / cfg.val_batch_size) * cfg.val_batch_size * 4
-        # path_list = self.test_list
-        # for test_file_name in path_list:
-        #     points = np.load(cfg.data_dir+"/"+test_file_name)
-        #     self.possibility += [np.random.rand(points.shape[0]) * 1e-3]
-        #     self.min_possibility += [float(np.min(self.possibility[-1]))]
         num_per_epoch = int(len(self.test_list) / cfg.val_batch_size) * cfg.val_batch_size * 4
         path_list = self.test_list
         for test_file_name in path_list:
@@ -189,21 +188,24 @@ class SemanticKITTI:
 
     def init_input_pipeline(self):
         print('Initiating input pipelines')
-        # cfg.ignored_label_inds = [self.label_to_idx[ign_label] for ign_label in self.ignored_labels]
-        cfg.ignored_label_inds =  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
+        cfg.ignored_label_inds = [self.label_to_idx[ign_label] for ign_label in self.ignored_labels]
+        # cfg.ignored_label_inds =  [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
         gen_function_test, gen_types, gen_shapes = self.get_batch_gen()
+        
+        print('Initiating input pipelines 1')
         # print('gen_types,gen_shapes',gen_types,gen_shapes)
         self.test_data = tf.data.Dataset.from_generator(gen_function_test, gen_types, gen_shapes)
 
         self.batch_test_data = self.test_data.batch(cfg.val_batch_size)
         
+        print('Initiating input pipelines 3')
         map_func = self.get_tf_mapping2()
 
+        print('Initiating input pipelines 4')
         self.batch_test_data = self.batch_test_data.map(map_func=map_func)
-
-        # print('\n\n\n\n\n\nself.batch_test_data.output_shapes',self.batch_test_data.output_shapes)
-
+        print('Initiating input pipelines 5')
         self.batch_test_data = self.batch_test_data.prefetch(cfg.val_batch_size)
+        print('Initiating input pipelines 6')
         # print('self.batch_test_data.shape',self.batch_test_data.)
         iter = tf.data.Iterator.from_structure(self.batch_test_data.output_types, self.batch_test_data.output_shapes)
 

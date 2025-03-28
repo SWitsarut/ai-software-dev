@@ -46,7 +46,7 @@
         window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
         const url = '<%= libpath %>/point_cloud/<%= data %>/metadata.json'
         console.log('url', url)
-        const description = `Classification <a target='_blank' href=` + url + ` >PG&E</a> `
+        const description = `Classification <a target='_blank' href=` + url + ` ><%- data %></a> `
         console.log(description)
         viewer.setDescription(description);
 

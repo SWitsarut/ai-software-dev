@@ -9,10 +9,11 @@ import numpy as np
 import os, argparse, pickle
 
 
+
 class SemanticKITTI:
-    def __init__(self, test_id):
+    def __init__(self):
         self.name = 'SemanticKITTI'
-        self.dataset_path = './data/semantic_kitti/dataset/sequences_0.06'
+        self.dataset_path = './data/semantic_kitti/dataset/sequences_0.06/08'
         self.label_to_names = {0: 'unlabeled',
                                1: 'car',
                                2: 'bicycle',
@@ -42,25 +43,22 @@ class SemanticKITTI:
         self.val_split = '08'
 
         self.seq_list = np.sort(os.listdir(self.dataset_path))
-        self.test_scan_number = str(test_id)
-        self.train_list, self.val_list, self.test_list = DP.get_file_list(self.dataset_path,
-                                                                          self.test_scan_number)
-        self.train_list = DP.shuffle_list(self.train_list)
-        self.val_list = DP.shuffle_list(self.val_list)
+        self.test_scan_number = '08'
+        # self.train_list, self.val_list, self.test_list = DP.get_file_list(self.dataset_path,
+        #                                                                   self.test_scan_number)
+        pc_path = os.path.join(self.dataset_path, "velodyne")
+        test_list = []
+        test_list.extend([os.path.join(pc_path, f) for f in np.sort(os.listdir(pc_path))])
+        self.test_list = test_list
+        print(self.test_list)
+
 
         self.possibility = []
         self.min_possibility = []
 
     # Generate the input data flow
     def get_batch_gen(self, split):
-        if split == 'training':
-            num_per_epoch = int(len(self.train_list) / cfg.batch_size) * cfg.batch_size
-            path_list = self.train_list
-        elif split == 'validation':
-            num_per_epoch = int(len(self.val_list) / cfg.val_batch_size) * cfg.val_batch_size
-            cfg.val_steps = int(len(self.val_list) / cfg.batch_size)
-            path_list = self.val_list
-        elif split == 'test':
+        if split == 'test':
             num_per_epoch = int(len(self.test_list) / cfg.val_batch_size) * cfg.val_batch_size * 4
             path_list = self.test_list
             for test_file_name in path_list:
@@ -106,7 +104,7 @@ class SemanticKITTI:
     def get_data(self, file_path):
         seq_id = file_path.split('/')[-3]
         frame_id = file_path.split('/')[-1][:-4]
-        kd_tree_path = join(self.dataset_path, seq_id, 'KDTree', frame_id + '.pkl')
+        kd_tree_path = join(self.dataset_path, 'KDTree', frame_id + '.pkl')
         # Read pkl with search tree
         with open(kd_tree_path, 'rb') as f:
             search_tree = pickle.load(f)
@@ -115,13 +113,12 @@ class SemanticKITTI:
         if int(seq_id) >= 11:
             labels = np.zeros(np.shape(points)[0], dtype=np.uint8)
         else:
-            label_path = join(self.dataset_path, seq_id, 'labels', frame_id + '.npy')
+            label_path = join(self.dataset_path, 'labels', frame_id + '.npy')
             labels = np.squeeze(np.load(label_path))
         return points, search_tree, labels
 
     @staticmethod
     def crop_pc(points, labels, search_tree, pick_idx):
-        # crop a fixed size point cloud for training
         center_point = points[pick_idx, :].reshape(1, -1)
         select_idx = search_tree.query(center_point, k=cfg.num_points)[1][0]
         select_idx = DP.shuffle_idx(select_idx)
@@ -160,35 +157,25 @@ class SemanticKITTI:
     def init_input_pipeline(self):
         print('Initiating input pipelines')
         cfg.ignored_label_inds = [self.label_to_idx[ign_label] for ign_label in self.ignored_labels]
-        gen_function, gen_types, gen_shapes = self.get_batch_gen('training')
         gen_function_val, _, _ = self.get_batch_gen('validation')
-        gen_function_test, _, _ = self.get_batch_gen('test')
+        gen_function_test, gen_types, gen_shapes = self.get_batch_gen('test')
         
         print('Initiating input pipelines 1')
-        self.train_data = tf.data.Dataset.from_generator(gen_function, gen_types, gen_shapes)
-        self.val_data = tf.data.Dataset.from_generator(gen_function_val, gen_types, gen_shapes)
         self.test_data = tf.data.Dataset.from_generator(gen_function_test, gen_types, gen_shapes)
 
         print('Initiating input pipelines 2')
-        self.batch_train_data = self.train_data.batch(cfg.batch_size)
-        self.batch_val_data = self.val_data.batch(cfg.val_batch_size)
         self.batch_test_data = self.test_data.batch(cfg.val_batch_size)
         
         print('Initiating input pipelines 3')
         map_func = self.get_tf_mapping2()
         print('Initiating input pipelines 4')
-        self.batch_train_data = self.batch_train_data.map(map_func=map_func)
-        self.batch_val_data = self.batch_val_data.map(map_func=map_func)
         self.batch_test_data = self.batch_test_data.map(map_func=map_func)
         print('Initiating input pipelines 5')
-        self.batch_train_data = self.batch_train_data.prefetch(cfg.batch_size)
-        self.batch_val_data = self.batch_val_data.prefetch(cfg.val_batch_size)
         self.batch_test_data = self.batch_test_data.prefetch(cfg.val_batch_size)
         print('Initiating input pipelines 6')
-        iter = tf.data.Iterator.from_structure(self.batch_train_data.output_types, self.batch_train_data.output_shapes)
+        iter = tf.data.Iterator.from_structure(self.batch_test_data.output_types, self.batch_test_data.output_shapes)
+
         self.flat_inputs = iter.get_next()
-        self.train_init_op = iter.make_initializer(self.batch_train_data)
-        self.val_init_op = iter.make_initializer(self.batch_val_data)
         self.test_init_op = iter.make_initializer(self.batch_test_data)
 
 
@@ -196,17 +183,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=int, default=0, help='the number of GPUs to use [default: 0]')
     parser.add_argument('--mode', type=str, default='train', help='options: train, test, vis')
-    parser.add_argument('--test_area', type=str, default='14', help='options: 08, 11,12,13,14,15,16,17,18,19,20,21')
     parser.add_argument('--model_path', type=str, default='None', help='pretrained model path')
     FLAGS = parser.parse_args()
 
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ['CUDA_VISIBLE_DEVICES'] = str(FLAGS.gpu)
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
     Mode = FLAGS.mode
 
-    test_area = FLAGS.test_area
-    dataset = SemanticKITTI(test_area)
+    # test_area = FLAGS.test_area
+    dataset = SemanticKITTI()
     dataset.init_input_pipeline()
     print('init_input_pipeline done!')
     if Mode == 'train':

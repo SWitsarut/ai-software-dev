@@ -1,5 +1,5 @@
 class ConfigSemanticKITTI:
-    data_dir = './test_data_prepared_0.06'
+    # data_dir = './test_data_prepared_0.06'
     k_n = 4  # KNN
     num_layers = 4  # Number of layers
     num_points = 4096 * 11  # Number of input points
@@ -9,7 +9,7 @@ class ConfigSemanticKITTI:
     out_name = 'sequence'
 
     batch_size = 4  # batch_size during training
-    val_batch_size = 10  # batch_size during validation and test
+    val_batch_size = 1  # batch_size during validation and test
     train_steps = 500  # Number of steps per epochs
     val_steps = 100  # Number of validation steps per epoch
 

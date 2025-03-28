@@ -179,7 +179,9 @@ function UserChip({
                                         <MenuItem value="User">User</MenuItem>
                                     </Select>
                                 </FormControl>
-                            ) : ('Hello')}
+                            ) : (<Typography variant="body2">
+                                <strong>Role:</strong> {currentRole}
+                            </Typography>)}
 
                             <Divider sx={{ my: 2 }} />
 

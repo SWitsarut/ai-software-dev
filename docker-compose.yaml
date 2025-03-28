@@ -13,12 +13,6 @@ services:
       - "CHOKIDAR_USEPOLLING=true"
     command: >
       sh -c "npm install && npm run dev"
-  stripe-cli:
-    image: stripe/stripe-cli
-    container_name: stripe-cli
-    command: "listen --api-key ${STRIPE_PRIVATE} --device-name Docker-stripe-cli --forward-to server:${API_PORT}/webhook/"
-
-
   server:
     container_name: express-server
     build:
@@ -31,6 +25,19 @@ services:
       - "./server/uploaded:/app/uploaded"
     environment:
       - "CHOKIDAR_USEPOLLING=true"
+  model_server:
+    container_name: model_server
+    stdin_open: true # -i (interactive)
+    tty: true # -t (allocate pseudo-TTY)
+    build:
+      context: "./RandLA-Net"
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./RandLA-Net:/app"
+      - "./server/uploaded:/data"
+      - "./server/public/point_cloud:/app/output"
   mongo:
     image: mongo
     container_name: mongo
@@ -40,8 +47,6 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - ./db:/data/db
-      
-
   mongo-express:
     image: mongo-express
     restart: always
@@ -53,5 +58,10 @@ services:
       # ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_PASSWORD}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/
       ME_CONFIG_MONGODB_URL: 'mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/'
       ME_CONFIG_BASICAUTH: false
+  stripe-cli:
+    image: stripe/stripe-cli
+    container_name: stripe-cli
+    command: "listen --api-key ${STRIPE_PRIVATE} --device-name Docker-stripe-cli --forward-to server:${API_PORT}/webhook/"
+
 volumes:
   db:

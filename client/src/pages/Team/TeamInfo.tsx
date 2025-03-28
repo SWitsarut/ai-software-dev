@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import Loading from '../../components/Loading'
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from '../../utils/axios';
 import UserChip from '../../components/team/TeamUserChip';
 import {
@@ -25,17 +25,17 @@ export interface TeamMemberUser {
     _id: string;
 }
 
-interface TeamWithDetailed extends Team {
+export interface TeamWithDetailed extends Team {
     createdAt: string
 }
 
-interface TeamMemberRes {
+export interface TeamMemberRes {
     members: TeamMember[],
     caller: { role: string }
     teamInfo: TeamWithDetailed
 }
 
-interface TeamMember {
+export interface TeamMember {
     addedBy: string;
     createdAt: string;
     role: string;
@@ -47,6 +47,7 @@ interface TeamMember {
 }
 
 function TeamInfo() {
+    const navigate = useNavigate()
     const { isLoading: isAuthLoading } = useAuth()
     const { id } = useParams();
     const [users, setUsers] = useState<TeamMember[]>([]);
@@ -55,8 +56,17 @@ function TeamInfo() {
     const [caller, setCaller] = useState<string>("User")
     const [teamInfo, setTeamInfo] = useState<TeamWithDetailed>()
 
-    const updateUserRole = (id: string, newRole: string) => {
-        console.log('called', id, newRole)
+    const updateUserRole = async (id: string, newRole: string) => {
+        try {
+            const res = await axios.post('/teams/update/role', {
+                target: id,
+                targetRole: newRole,
+                teamId: teamInfo?._id
+            })
+            console.log(res);
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     const formatCreateDate = (dateString?: string) => {
@@ -79,7 +89,6 @@ function TeamInfo() {
             try {
                 setIsLoading(true);
                 const res = await axios.get<TeamMemberRes>(`/teams/id/${id}`);
-                console.log(res.data)
                 setUsers(res.data.members);
                 setCaller(res.data.caller.role)
                 setTeamInfo(res.data.teamInfo)
@@ -155,7 +164,7 @@ function TeamInfo() {
                                 {teamInfo?.name}
                             </Typography>
                             <Divider />
-                            <Typography variant="body1" >
+                            <Typography variant="body1" mt={1}>
                                 โดย {teamInfo?.createBy.name} เมื่อ {formatCreateDate(teamInfo?.createdAt)}
                             </Typography>
                         </Box>
@@ -194,10 +203,15 @@ function TeamInfo() {
                             <Typography variant="h6" sx={{ mb: 2 }}>
                                 Additional Information
                             </Typography>
-                            <Box display={'flex'} gap={1}>
-                                <Button variant='contained'>ซื้อข้อมูล</Button>
-                                <Button variant='contained'>จ้างประมวลผล</Button>
-                            </Box>
+                            {
+                                caller === "Admin" && (
+                                    <Box display={'flex'} gap={1}>
+                                        <Button onClick={() => navigate(`/teams/id/${teamInfo?._id}/buy`)} variant='contained'>ซื้อข้อมูล</Button>
+                                        <Button variant='contained'>จ้างประมวลผล</Button>
+                                    </Box>
+                                )
+                            }
+
 
                         </Stack>
                         <Divider sx={{ mb: 2 }} />
