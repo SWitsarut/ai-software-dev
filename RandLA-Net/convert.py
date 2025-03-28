@@ -101,6 +101,7 @@ if os.path.isdir(pc_path):  # If the input path is a directory
             labels = load_labels(label_file)
             # print('labels',labels)
             # Ensure label size matches point cloud size
+            print(xyz.shape,labels.shape)
             assert xyz.shape[0] == labels.shape[0], f"Mismatch between points and labels for file {file}"
 
             # Map labels to LAS-compatible classification

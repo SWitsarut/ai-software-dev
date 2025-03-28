@@ -176,6 +176,30 @@ const DataForm: React.FC<DataFormProps> = ({
         </Button>
         <Button
           startIcon={<DataIcon />}
+          onClick={() => submitForm('08_testing_2')}
+        >
+          08_testing_2
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('11_testing')}
+        >
+          11_testing
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('dataset_as_parameters')}
+        >
+          dataset_as_parameters aka 11
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
+          onClick={() => submitForm('08_dataset_as_param')}
+        >
+          08_dataset_as_param aka 08
+        </Button>
+        <Button
+          startIcon={<DataIcon />}
           onClick={() => submitForm('out')}
         >
           old prediction

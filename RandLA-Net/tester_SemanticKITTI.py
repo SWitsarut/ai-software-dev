@@ -63,9 +63,9 @@ class ModelTester:
         self.test_probs = [np.zeros(shape=[len(l), model.config.num_classes], dtype=np.float16)
                            for l in dataset.possibility]
 
-        test_path = join('test', 'sequences')
+        test_path = join('./output', 'prediction')
         makedirs(test_path) if not exists(test_path) else None
-        save_path = join(test_path, dataset.test_scan_number, 'predictions')
+        save_path = join(test_path, dataset.outname, 'predictions')
         makedirs(save_path) if not exists(save_path) else None
         test_smooth = 0.98
         epoch_ind = 0
@@ -108,7 +108,8 @@ class ModelTester:
                     for j in range(len(self.test_probs)):
                         test_file_name = dataset.test_list[j]
                         frame = test_file_name.split('/')[-1][:-4]
-                        proj_path = join(dataset.dataset_path, dataset.test_scan_number, 'proj')
+                        # proj_path = join(dataset.dataset_path, dataset.test_scan_number, 'proj')
+                        proj_path = join(dataset.dataset_path,'proj')
                         proj_file = join(proj_path, str(frame) + '_proj.pkl')
                         if isfile(proj_file):
                             with open(proj_file, 'rb') as f:
@@ -116,8 +117,11 @@ class ModelTester:
                         probs = self.test_probs[j][proj_inds[0], :]
                         pred = np.argmax(probs, 1)
                         if dataset.test_scan_number == '08':
-                            label_path = join(dirname(dataset.dataset_path), 'sequences', dataset.test_scan_number,
-                                              'labels')
+                            # label_path = join(dirname(dataset.dataset_path), 'sequences', dataset.test_scan_number,
+                            #                   'labels')
+                            # label_path = join(dirname(dataset.dataset_path), dataset.test_scan_number,
+                            #                   'labels')
+                            label_path =join("./data/semantic_kitti/dataset/sequences",dataset.test_scan_number,"labels")
                             label_file = join(label_path, str(frame) + '.label')
                             labels = DP.load_label_kitti(label_file, remap_lut_val)
                             invalid_idx = np.where(labels == 0)[0]
@@ -143,7 +147,7 @@ class ModelTester:
                             pred = pred.astype(np.uint32)
                             pred.tofile(store_path)
                         else:
-                            store_path = join(test_path, dataset.test_scan_number, 'predictions',
+                            store_path = join(test_path, dataset.outname, 'predictions',
                                               str(frame) + '.label')
                             pred = pred + 1
                             pred = pred.astype(np.uint32)
@@ -153,7 +157,7 @@ class ModelTester:
                             pred = (upper_half << 16) + lower_half  # reconstruct full label
                             pred = pred.astype(np.uint32)
                             pred.tofile(store_path)
-                    log_out(str(dataset.test_scan_number) + ' finished', self.Log_file)
+                    print(str(dataset.outname) + ' finished')
                     if dataset.test_scan_number=='08':
                         print('dataset.test_scan_number==08')
                         iou_list = []
