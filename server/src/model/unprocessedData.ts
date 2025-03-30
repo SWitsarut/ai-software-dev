@@ -2,28 +2,34 @@ import mongoose from "mongoose";
 import { v4 as uuidv4 } from 'uuid'
 
 
+export enum UnprocessedDataStatus {
+    CREATED = "Created",
+    UPLOADED = "Uploaded",
+    MANUAL = "Manual"
+}
+
 
 const UnprocessedDataSchema = new mongoose.Schema(
     {
-        dataId: {
-            type: String,
-            unique: true,
-            default: uuidv4
-        },
         name: {
             type: String,
             require: true
         },
         createBy: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "Users",
             require: true,
 
-        }, 
+        },
         path: {
-            type:String,
-            require:true
+            type: String,
+            require: true
+        }, status: {
+            type: String,
+            enum: Object.values(UnprocessedDataStatus),
+            default: UnprocessedDataStatus.CREATED
         }
+
     },
     { timestamps: true }
 );

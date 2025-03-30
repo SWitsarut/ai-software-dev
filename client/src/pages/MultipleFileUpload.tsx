@@ -1,32 +1,33 @@
 import React, { useState } from 'react';
 import axios from '../utils/axios';
-import { API_URL } from '../context/AuthProvider';
 
-const FileUpload = () => {
-    const [file, setFile] = useState<File | null>(null);
+const MultipleFileUpload = () => {
+    const [files, setFiles] = useState<FileList | null>(null);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
 
     // Handle file change
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = e.target.files?.[0]; // Safely access the file
-        if (selectedFile) {
-            setFile(selectedFile);
+        const selectedFiles = e.target.files;
+        if (selectedFiles) {
+            setFiles(selectedFiles);
         }
-
     };
+
     // Handle file upload
     const handleUpload = async () => {
-        if (!file) {
-            setError('Please select a file first!');
+        if (!files || files.length === 0) {
+            setError('Please select at least one file!');
             return;
         }
 
         const formData = new FormData();
-        formData.append('file', file);
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
+        }
 
         try {
-            const response = await axios.post(`/upload/single`, formData, {
+            const response = await axios.post(`/upload/multiple`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -34,8 +35,7 @@ const FileUpload = () => {
 
             setMessage('File uploaded successfully');
             setError('');
-            console.log(response.data);  // Logs the response from server
-
+            console.log(response.data);
         } catch (error) {
             setError('File upload failed');
             setMessage('');
@@ -45,9 +45,9 @@ const FileUpload = () => {
 
     return (
         <div>
-            <h2>File Upload</h2>
-            <input type="file" name="image" onChange={handleFileChange} />
-            <button onClick={handleUpload}>Upload File</button>
+            <h2>Multiple File Upload</h2>
+            <input type="file" name="files" multiple onChange={handleFileChange} />
+            <button onClick={handleUpload}>Upload Files</button>
 
             {message && <p style={{ color: 'green' }}>{message}</p>}
             {error && <p style={{ color: 'red' }}>{error}</p>}
@@ -55,4 +55,4 @@ const FileUpload = () => {
     );
 };
 
-export default FileUpload;
+export default MultipleFileUpload;

@@ -17,11 +17,12 @@ export const secret = process.env.ACCESS_TOKEN_SECRET || "";
 declare global {
     namespace Express {
         interface Request {
-            user?: { name: string; role: string; userId: string }; // Added userId
+            user?: { name: string; role: string; userId: string };
+            dataId?: { storedData: any };
+            uniqueFolderPath?: string; // Add this new property
         }
     }
 }
-
 
 
 // Route to get current user info

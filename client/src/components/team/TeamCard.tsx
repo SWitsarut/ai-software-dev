@@ -33,7 +33,7 @@ function TeamsCard({ team }: TeamsCardProps) {
                 sx={{
                     width: 100,
                     height: 100,
-                    mb: 2
+                    // mb: 2
                 }}
             >
                 {team.name.charAt(0)}

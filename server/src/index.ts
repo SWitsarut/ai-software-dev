@@ -6,11 +6,12 @@ import mongoose from 'mongoose';
 
 import { visible_label } from './aviable_label';
 import auth_router from './auth'
-import upload_data from './point_cloud/upload_data'
+// import upload_data from './point_cloud/upload_data'
 import payments from './payments/payments'
 import users from "./userdata/get_user"
 import teams from "./Project/team"
-
+import request_end_point from "./point_cloud/request"
+import test_python from './test_python'
 
 const app = express();
 
@@ -36,13 +37,15 @@ app.set('views', "views");
 app.set('view engine', 'ejs');
 app.use("/public", express.static("public"));
 
+app.use("/test_python", test_python);
 
 //router
 app.use('/user', users)
 app.use('/auth', auth_router)
 app.use('/', payments)
-app.use('/upload', upload_data)
-app.use('/teams',teams)
+// app.use('/upload', upload_data)
+app.use('/point_cloud', request_end_point)
+app.use('/teams', teams)
 
 
 app.post('/', (req, res) => {
@@ -82,7 +85,34 @@ app.listen(PORT, async () => {
   try {
     await mongoose.connect(uri, {});
     console.log("🛢️ Connected To Database");
+
   } catch (error) {
     console.log("⚠️ Error to connect Database", error);
   }
 });
+
+// app.listen(PORT, async () => {
+//   console.log(`🗄️ Server Fire on http://localhost:${PORT}`);
+
+//   const uri = 'mongodb://root:example123@mongo:27017/';
+
+//   try {
+//     await mongoose.connect(uri, {});
+//     console.log("🛢️ Connected To Database");
+
+//     // Drop the unique index on teamId only if it exists
+//     const db = mongoose.connection.db;
+//     const collection = db?.collection('projects');
+
+//     const indexes = await collection?.indexes();
+//     if (indexes?.some(index => index.name === "teamId_1")) {
+//       await collection?.dropIndex("teamId_1");
+//       console.log("✅ Dropped unique index on teamId");
+//     } else {
+//       console.log("ℹ️ No unique index on teamId found");
+//     }
+
+//   } catch (error) {
+//     console.log("⚠️ Error connecting to Database", error);
+//   }
+// });

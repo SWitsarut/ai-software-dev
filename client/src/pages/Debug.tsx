@@ -31,11 +31,37 @@ interface DataFormProps {
   elevation?: number;
 }
 
+interface PC_PathName {
+  displayName: string
+  path: string
+}
+
 const DataForm: React.FC<DataFormProps> = ({
   action = API_URL, // Directly use the API_URL from context
   method = "POST",
   target = "_blank",
 }) => {
+
+  const pcs: PC_PathName[] = [
+    { displayName: 'Load Data 14_spacial', path: '14_spacial/0' },
+    { displayName: 'Load Data 14_new', path: '14_new' },
+    { displayName: 'Load Data 14_single', path: '14_single' },
+    { displayName: 'Load Data 03', path: '03/1' },
+    { displayName: '08_pred', path: '08_pred' },
+    { displayName: '08_label', path: '08_label' },
+    { displayName: '08_custom_out', path: '08_custom_out docker!! wrong path!!!!' },
+    { displayName: 'docker_right_path', path: 'docker_right_path' },
+    { displayName: 'change_network_and_tester', path: 'change_network_and_tester' },
+    { displayName: 'change_network', path: 'change_network' },
+    { displayName: 'tester_change_test', path: 'tester_change_test' },
+    { displayName: '08_testing', path: '08_testing' },
+    { displayName: '08_testing_2', path: '08_testing_2' },
+    { displayName: '11_testing', path: '11_testing' },
+    { displayName: 'dataset_as_parameters aka 11', path: 'dataset_as_parameters' },
+    { displayName: '08_dataset_as_param aka 08', path: '08_dataset_as_param' },
+    { displayName: 'old prediction', path: 'out' },
+  ];
+
   const formRef = useRef<HTMLFormElement>(null);
   const dataInputRef = useRef<HTMLInputElement>(null);
   const selectedLabelsRef = useRef<HTMLInputElement>(null);
@@ -64,6 +90,7 @@ const DataForm: React.FC<DataFormProps> = ({
     });
   };
 
+
   const submitForm = (dataValue: string) => {
     if (dataInputRef.current && selectedLabelsRef.current && formRef.current) {
       dataInputRef.current.value = dataValue;
@@ -71,6 +98,8 @@ const DataForm: React.FC<DataFormProps> = ({
       formRef.current.submit();
     }
   };
+
+
 
   return (
     <form
@@ -101,110 +130,15 @@ const DataForm: React.FC<DataFormProps> = ({
         sx={{ mt: 2, mb: 2 }}
       >
         <Box display={'flex'} flexWrap={'wrap'}>
-          
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('14_spacial/0')}
-        >
-          Load Data 14_spacial
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('14_new')}
-        >
-          Load Data 14_new
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('14_single')}
-        >
-          Load Data 14_single
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('03/1')}
-        >
-          Load Data 03
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('08_pred')}
-        >
-          08_pred
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('08_label')}
-        >
-          08_label
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('08_custom_out')}
-        >
-          08_custom_out docker!! wrong path!!!!
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('docker_right_path')}
-        >
-          docker_right_path
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('change_network_and_tester')}
-        >
-          change_network_and_tester
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('change_network')}
-        >
-          change_network
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('tester_change_test')}
-        >
-          tester_change_test
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('08_testing')}
-        >
-          08_testing
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('08_testing_2')}
-        >
-          08_testing_2
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('11_testing')}
-        >
-          11_testing
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('dataset_as_parameters')}
-        >
-          dataset_as_parameters aka 11
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('08_dataset_as_param')}
-        >
-          08_dataset_as_param aka 08
-        </Button>
-        <Button
-          startIcon={<DataIcon />}
-          onClick={() => submitForm('out')}
-        >
-          old prediction
-        </Button>
-  
+          {pcs.map((pc, index) => (
+            <Button
+              key={index}
+              startIcon={<DataIcon />}
+              onClick={() => submitForm(pc.path)}
+            >
+              {pc.displayName}
+            </Button>
+          ))}
         </Box>
       </ButtonGroup>
 
@@ -275,7 +209,7 @@ const DataForm: React.FC<DataFormProps> = ({
 };
 
 // Usage example
-const App: React.FC = () => {
+const Debug: React.FC = () => {
   return (
     <Page header='Data Visualization Tool'>
       <DataForm
@@ -288,4 +222,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default Debug;

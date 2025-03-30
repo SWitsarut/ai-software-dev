@@ -36,8 +36,8 @@ services:
       - "8000:8000"
     volumes:
       - "./RandLA-Net:/app"
-      - "./server/uploaded:/data"
-      - "./server/public/point_cloud:/app/output"
+      - "./server/uploaded:/app/uploaded"
+      - "./server/public/point_cloud:/app/public"
   mongo:
     image: mongo
     container_name: mongo

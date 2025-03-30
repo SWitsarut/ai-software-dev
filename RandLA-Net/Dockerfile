@@ -41,4 +41,7 @@ RUN source ~/miniconda3/etc/profile.d/conda.sh \
     && pip install -r requirements.txt
 
 # Default command
-CMD ["/bin/bash"]
+# CMD ["python","./server.py"]
+ENTRYPOINT ["/bin/bash", "-c", "source ~/miniconda3/etc/profile.d/conda.sh && conda activate randlanet && python ./server/server.py"]
+
+# CMD ["/bin/bash"]

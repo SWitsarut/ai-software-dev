@@ -3,7 +3,7 @@ import SideBar, { SideBarItemProps } from "./components/sidebar/SideBar";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Box } from "@mui/material";
-import Own from "./pages/Own";
+import Debug from "./pages/Debug";
 import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
 import { useAuth } from "./hooks/useAuth";
@@ -17,16 +17,20 @@ import ProfileSetting from "./pages/User/Profile-setting";
 import CreateTeam from "./pages/Team/CreateTeam";
 import TeamInfo from "./pages/Team/TeamInfo";
 import Buy from "./pages/Project/Buy";
+import MultipleFileUpload from "./pages/MultipleFileUpload";
+import Hire from "./pages/Project/Hire";
+import PestControlIcon from '@mui/icons-material/PestControl';
 // Create an initial set of routes for type safety
 export const baseOptions: SideBarItemProps[] = [
   { name: "Dashboard", path: "/", icon: <HomeIcon /> },
-  { name: "Upload file", path: 'upload' },
+  { name: "Upload file", path: '/upload' },
+  { name: "Upload files", path: '/uploads' },
   { name: "check out", path: '/checkout' },
 ];
 
 // Protected routes that require authentication
 export const protectedOptions: SideBarItemProps[] = [
-  { name: "Own", path: "/own", icon: <PersonIcon /> },
+  { name: "debug", path: "/debug", icon: <PestControlIcon /> },
   { name: "Teams", path: "/teams", icon: <GroupsIcon /> },
 ];
 
@@ -61,6 +65,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/upload" element={<FileUpload />} />
+          <Route path="/uploads" element={<MultipleFileUpload />} />
           <Route path="/checkout" element={<CheckOutForm />} />
           <Route path="/profile/:id" element={<UserData />} />
           <Route path="/profile-setting" element={<ProfileSetting />} />
@@ -80,16 +85,21 @@ function App() {
               <TeamInfo />
             </ProtectedRoute>
           } />
-          <Route path="/teams/id/:id/:buy" element={
+          <Route path="/teams/id/:id/buy" element={
             <ProtectedRoute>
               <Buy />
             </ProtectedRoute>
           } />
+          <Route path="/teams/id/:id/hire" element={
+            <ProtectedRoute>
+              <Hire />
+            </ProtectedRoute>
+          } />
           <Route
-            path="/own"
+            path="/debug"
             element={
               <ProtectedRoute>
-                <Own />
+                <Debug />
               </ProtectedRoute>
             }
           />

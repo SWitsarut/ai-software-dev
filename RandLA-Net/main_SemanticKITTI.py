@@ -57,6 +57,7 @@ class SemanticKITTI:
 
         self.possibility = []
         self.min_possibility = []
+        self.init_input_pipeline()
 
     # Generate the input data flow
     def get_batch_gen(self, split):
@@ -190,7 +191,6 @@ if __name__ == '__main__':
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     
     dataset = SemanticKITTI("./data/semantic_kitti/dataset/sequences_0.06/08","08_dataset_as_params")
-    dataset.init_input_pipeline()
     print('init_input_pipeline done!')
 
     cfg.saving = False

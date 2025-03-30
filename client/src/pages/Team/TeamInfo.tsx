@@ -207,7 +207,7 @@ function TeamInfo() {
                                 caller === "Admin" && (
                                     <Box display={'flex'} gap={1}>
                                         <Button onClick={() => navigate(`/teams/id/${teamInfo?._id}/buy`)} variant='contained'>ซื้อข้อมูล</Button>
-                                        <Button variant='contained'>จ้างประมวลผล</Button>
+                                        <Button onClick={()=> navigate(`/teams/id/${teamInfo?._id}/hire`)}variant='contained'>จ้างประมวลผล</Button>
                                     </Box>
                                 )
                             }

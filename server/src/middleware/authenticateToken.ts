@@ -24,7 +24,7 @@ export default function authenticateToken(req: any, res: any, next: NextFunction
         }
         req.user = {
             userId: decoded.userId,
-            role: decoded.role || 'user', // Default to 'user' if role is not in token
+            role: decoded.role || 'User', // Default to 'user' if role is not in token
             name: decoded.name || '' // Default empty string if name is not in token
         };
 

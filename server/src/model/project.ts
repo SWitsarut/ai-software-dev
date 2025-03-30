@@ -13,22 +13,22 @@ const ProjectSchema = new mongoose.Schema(
             ref: "Teams",
             required: true,
         },
-        dataid: {
+        dataId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "unprocessedData",
             required: true,
         },
         paymentId: {
             type: String,
-            required: true,
+            default: null
         },
         amount: {
             type: Number,
-            required: true, // Amount paid in the smallest currency unit (e.g., cents for USD)
+            required: false, // Make this optional for initial creation
+            default: 0
         },
         currency: {
             type: String,
-            required: true,
             default: "thb"
         },
         stripeEvent: {
@@ -44,13 +44,16 @@ const ProjectSchema = new mongoose.Schema(
                 status: { type: String, enum: Object.values(PaymentStatus) },
                 updatedAt: { type: Date, default: Date.now }
             }
-        ]
+        ],
+        targets: {
+            type: [Number],
+        }
     },
     { timestamps: true }
 );
 
 // Indexing for faster queries
 
-ProjectSchema.index({ teamId: 1, paymentId: 1 }, { unique: true });
+// ProjectSchema.index({ teamId: 1, paymentId: 1 }, { unique: true });
 
 export const Project = mongoose.model("Project", ProjectSchema);

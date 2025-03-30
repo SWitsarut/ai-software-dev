@@ -71,7 +71,6 @@ function ViewTeams() {
                 <Paper elevation={3}
                     sx={{
                         p: 2,
-                        m: 1,
                         mb: 2,
                         width: "100%",
                         display: 'flex',
