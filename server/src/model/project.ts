@@ -18,6 +18,11 @@ const ProjectSchema = new mongoose.Schema(
             ref: "unprocessedData",
             required: true,
         },
+        name: {
+            type: String,
+            default: "",
+            require: true,
+        },
         paymentId: {
             type: String,
             default: null

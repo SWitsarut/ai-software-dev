@@ -11,11 +11,11 @@ import os, argparse, pickle
 
 
 class SemanticKITTI:
-    def __init__(self,data_path,outname):
+    def __init__(self,data_path):
         self.name = 'SemanticKITTI'
         # self.dataset_path = './data/semantic_kitti/dataset/sequences_0.06/11'
         self.dataset_path = data_path
-        self.outname = outname
+        self.outname = data_path
         self.label_to_names = {0: 'unlabeled',
                                1: 'car',
                                2: 'bicycle',
@@ -58,6 +58,7 @@ class SemanticKITTI:
         self.possibility = []
         self.min_possibility = []
         self.init_input_pipeline()
+
 
     # Generate the input data flow
     def get_batch_gen(self, split):
@@ -113,11 +114,11 @@ class SemanticKITTI:
             search_tree = pickle.load(f)
         points = np.array(search_tree.data, copy=False)
         # Load labels
-        if int(seq_id) >= 11:
-            labels = np.zeros(np.shape(points)[0], dtype=np.uint8)
-        else:
-            label_path = join(self.dataset_path, 'labels', frame_id + '.npy')
-            labels = np.squeeze(np.load(label_path))
+        # if int(seq_id) >= 11:
+        labels = np.zeros(np.shape(points)[0], dtype=np.uint8)
+        # else:
+        #     label_path = join(self.dataset_path, 'labels', frame_id + '.npy')
+        #     labels = np.squeeze(np.load(label_path))
         return points, search_tree, labels
 
     @staticmethod

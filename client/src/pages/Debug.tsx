@@ -60,6 +60,10 @@ const DataForm: React.FC<DataFormProps> = ({
     { displayName: 'dataset_as_parameters aka 11', path: 'dataset_as_parameters' },
     { displayName: '08_dataset_as_param aka 08', path: '08_dataset_as_param' },
     { displayName: 'old prediction', path: 'out' },
+    { displayName: '67ea595a307bf9fb6bf08489', path: '67ea595a307bf9fb6bf08489/potree/0' },
+    { displayName: '67ea68c915848637748d79c8', path: '67ea68c915848637748d79c8/potree/0' },
+    { displayName: '8_label_test', path: '67ea70a8238fce10e53072fa/potree/0' },
+    { displayName: 'AJ_TEST', path: '67ea7122238fce10e5307323/potree/0' },
   ];
 
   const formRef = useRef<HTMLFormElement>(null);

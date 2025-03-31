@@ -86,19 +86,37 @@ router.post('/request', authenticateToken, upload.array('files'), async (req, re
     const createdProject = await Project.create({
         teamId,
         dataId: updatedData._id,
-        targets: selectedLabels
+        targets: selectedLabels,
+        name: dataName
     });
 
-    const price = await axios.post<{price:string|number}>(`/calculate_price`, {
+    const price = await axios.post<{ price: string | number }>(`/calculate_price`, {
         path: updatedData.path
     }).catch(error => {
         console.error("Error in calculating price:", error);
         res.status(500).json({ error: "Error calculating price." });
     });
 
-    console.log("Price data:", price?.data.price); // Inspect the response
-    res.json({
-        files: req.files, updatedData, request, createdProject, price: price?.data.price // Only send the price value
+    const updatedProject = await Project.findByIdAndUpdate(createdProject._id, { amount: price?.data.price }, { new: true })
+
+    //process
+    const processed = await axios.post(`/process`, {
+        path: updatedData.path,
+        dataName: updatedData.name,
+        data_id: updatedData._id,
+    })
+    await axios.post(`/predict`, {
+        path: processed.data.dataPath
+    })
+    await axios.post(`/potree`, {
+        id: updatedProject?.dataId,
+        las_dir: updatedData.path,
+    })
+    await axios.post(`/clustering`, {
+        dataId: updatedData?._id,
+    })
+    res.status(StatusCodes.OK).json({
+        data: "assigned price", project: updatedProject
     })
 })
 

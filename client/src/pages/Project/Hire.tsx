@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
-import { TeamMemberRes, TeamWithDetailed } from '../Team/TeamInfo';
+import TeamInfo, { TeamMemberRes, TeamWithDetailed } from '../Team/TeamInfo';
 import Loading from '../../components/Loading';
 import { Box, Button, Checkbox, Divider, FormControlLabel, Grid, Paper, Stack, styled, TextField, Typography, useTheme } from '@mui/material';
 import Page from '../../components/Page';
@@ -31,6 +31,7 @@ function Buy() {
     const [files, setFiles] = useState<FileList | null>(null);
     const [totalSize, setTotalSize] = useState<number>(0);
     const [selectedLabels, setSelectedLabels] = useState<number[]>([23, 24, 12, 1, 17]); // Default from server code
+    const [teamId,setTeamId] =useState<string>("")
 
     const MAX_SIZE_LIMIT = 2 * 1024 * 1024 * 1024; // 2GB in bytes
 
@@ -41,6 +42,7 @@ function Buy() {
                 setIsLoading(true);
                 const res = await axios.get<TeamMemberRes>(`/teams/id/${id}`);
                 setCaller(res.data.caller.role)
+                setTeamId(res.data.teamInfo._id)
                 if (res.data.caller.role !== "Admin") navigate(`/teams/id/${id}`)
                 setError(null);
             } catch (err) {
@@ -175,14 +177,14 @@ function Buy() {
         formData.append('dataName', dataName)
         formData.append('teamId', id || "")
         try {
-            const response = await axios.post(`/point_cloud/request`, formData, {
+            axios.post(`/point_cloud/request`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
 
             setError('');
-            console.log(response.data);
+            navigate(`/teams/id/${teamId}`)
         } catch (error) {
             setError('File upload failed');
             console.error(error);

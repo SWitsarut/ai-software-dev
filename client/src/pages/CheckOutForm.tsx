@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import axios from 'axios';
+import axios from '../utils/axios';
 import {
   Button,
   TextField,
@@ -52,7 +52,7 @@ const useStripeKey = () => {
 const PaymentForm = () => {
   const stripe = useStripe();
   const elements = useElements();
-  const [amount, setAmount] = useState('19.99');
+  const [amount, setAmount] = useState('20');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +75,7 @@ const PaymentForm = () => {
 
     try {
       // Create a payment intent on the server
-      const { data } = await axios.post<PaymentIntentResponse>(`${API_URL}/create-payment-intent`, {
+      const { data } = await axios.post<PaymentIntentResponse>(`/create-payment-intent`, {
         amount: parseFloat(amount),
         currency: 'usd'
       });

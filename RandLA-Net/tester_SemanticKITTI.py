@@ -63,10 +63,12 @@ class ModelTester:
         self.test_probs = [np.zeros(shape=[len(l), model.config.num_classes], dtype=np.float16)
                            for l in dataset.possibility]
 
-        test_path = join('./output', 'prediction')
+        print('dataset.outname',dataset.outname)
+        test_path = join(dataset.outname,'prediction')
+        print('test_path',test_path)
         makedirs(test_path) if not exists(test_path) else None
-        save_path = join(test_path, dataset.outname, 'predictions')
-        makedirs(save_path) if not exists(save_path) else None
+        # save_path = join(test_path, dataset.outname, 'predictions')
+        # makedirs(save_path) if not exists(save_path) else None
         test_smooth = 0.98
         epoch_ind = 0
 
@@ -108,6 +110,7 @@ class ModelTester:
                     for j in range(len(self.test_probs)):
                         test_file_name = dataset.test_list[j]
                         frame = test_file_name.split('/')[-1][:-4]
+                        print('\n\nframe==  ',frame)
                         # proj_path = join(dataset.dataset_path, dataset.test_scan_number, 'proj')
                         proj_path = join(dataset.dataset_path,'proj')
                         proj_file = join(proj_path, str(frame) + '_proj.pkl')
@@ -147,7 +150,7 @@ class ModelTester:
                             pred = pred.astype(np.uint32)
                             pred.tofile(store_path)
                         else:
-                            store_path = join(test_path, dataset.outname, 'predictions',
+                            store_path = join(test_path,
                                               str(frame) + '.label')
                             pred = pred + 1
                             pred = pred.astype(np.uint32)
@@ -158,31 +161,31 @@ class ModelTester:
                             pred = pred.astype(np.uint32)
                             pred.tofile(store_path)
                     print(str(dataset.outname) + ' finished')
-                    if dataset.test_scan_number=='08':
-                        print('dataset.test_scan_number==08')
-                        iou_list = []
-                        for n in range(0, num_classes, 1):
-                            denominator = gt_classes[n] + positive_classes[n] - true_positive_classes[n]
-                            if denominator == 0:
-                                iou = 0  # Assign 0 instead of nan
-                            else:
-                                iou = true_positive_classes[n] / float(denominator)
-                            # iou = true_positive_classes[n] / float(
-                            #     gt_classes[n] + positive_classes[n] - true_positive_classes[n])
-                            iou_list.append(iou)
-                        mean_iou = sum(iou_list) / float(num_classes)
+                    # if dataset.test_scan_number=='08':
+                    #     print('dataset.test_scan_number==08')
+                    #     iou_list = []
+                    #     for n in range(0, num_classes, 1):
+                    #         denominator = gt_classes[n] + positive_classes[n] - true_positive_classes[n]
+                    #         if denominator == 0:
+                    #             iou = 0  # Assign 0 instead of nan
+                    #         else:
+                    #             iou = true_positive_classes[n] / float(denominator)
+                    #         # iou = true_positive_classes[n] / float(
+                    #         #     gt_classes[n] + positive_classes[n] - true_positive_classes[n])
+                    #         iou_list.append(iou)
+                    #     mean_iou = sum(iou_list) / float(num_classes)
 
-                        log_out('eval accuracy: {}'.format(val_total_correct / float(val_total_seen)), self.Log_file)
-                        log_out('mean IOU:{}'.format(mean_iou), self.Log_file)
+                    #     log_out('eval accuracy: {}'.format(val_total_correct / float(val_total_seen)), self.Log_file)
+                    #     log_out('mean IOU:{}'.format(mean_iou), self.Log_file)
 
-                        mean_iou = 100 * mean_iou
-                        print('Mean IoU = {:.1f}%'.format(mean_iou))
-                        s = '{:5.2f} | '.format(mean_iou)
-                        for IoU in iou_list:
-                            s += '{:5.2f} '.format(100 * IoU)
-                        print('-' * len(s))
-                        print(s)
-                        print('-' * len(s) + '\n')
+                    #     mean_iou = 100 * mean_iou
+                    #     print('Mean IoU = {:.1f}%'.format(mean_iou))
+                    #     s = '{:5.2f} | '.format(mean_iou)
+                    #     for IoU in iou_list:
+                    #         s += '{:5.2f} '.format(100 * IoU)
+                    #     print('-' * len(s))
+                    #     print(s)
+                    #     print('-' * len(s) + '\n')
                     self.sess.close()
                     return
                 self.sess.run(dataset.test_init_op)

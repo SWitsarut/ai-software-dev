@@ -42,6 +42,6 @@ RUN source ~/miniconda3/etc/profile.d/conda.sh \
 
 # Default command
 # CMD ["python","./server.py"]
-ENTRYPOINT ["/bin/bash", "-c", "source ~/miniconda3/etc/profile.d/conda.sh && conda activate randlanet && python ./server/server.py"]
+ENTRYPOINT ["/bin/bash", "-c", "source ~/miniconda3/etc/profile.d/conda.sh && conda activate randlanet && python ./server.py"]
 
 # CMD ["/bin/bash"]

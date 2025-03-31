@@ -47,18 +47,14 @@
         // Initialize viewer
         window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
 
-        // Set up point cloud data URL
-        const pointCloudUrl = '<%= libpath %>/point_cloud/<%= data %>/metadata.json';
-
-        console.log("Potree configuration:", {
-            pointCloudUrl,
-            libpath: '<%= libpath %>',
-            data: '<%= data %>'
-        });
+        // Point cloud directories
+        const potreeDirs = <%- JSON.stringify(potreeDirs) %>;
+        console.log("Point cloud directories:", potreeDirs);
+        console.log("Point cloud directories received:", <%- JSON.stringify(potreeDirs) %>);
 
 
         // Create description with link to metadata
-        const description = `Classification <strong><%- data %></strong>`;
+        const description = `Classification <strong><%- dataName %></strong>`;
         console.log(description);
         viewer.setDescription(description);
 
@@ -77,26 +73,48 @@
         const interestScheme = <%- JSON.stringify(interest_scheme) %>;
         console.log("Classification scheme:", interestScheme);
 
+        // Initialize a counter to track loaded point clouds
+        let loadedClouds = 0;
+        const totalClouds = potreeDirs.length;
 
-        // Load point cloud and set up visualization
-        Potree.loadPointCloud(pointCloudUrl).then(result => {
-            console.log(pointCloudUrl)
-            let pointcloud = result.pointcloud;
-            let material = pointcloud.material;
-
-            // Configure material properties
-            material.minSize = 2;
-            material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-            // material.pointColorType = Potree.PointColorType.CLASSIFICATION;
-
-
-            // Add point cloud to scene and apply classification scheme
-            viewer.scene.addPointCloud(pointcloud);
-            viewer.fitToScreen();
-
-            // viewer.fitToScreen();
+        // Function to load all point clouds
+        async function loadPointClouds() {
+            // Apply the classification scheme once all point clouds are loaded
             viewer.setClassifications(interestScheme);
-        });
+            
+            // Load each point cloud
+            for (const dir of potreeDirs) {
+                const pointCloudUrl = `${dir}`;
+                console.log(`Loading point cloud: ${pointCloudUrl}`);
+                
+                try {
+                    const result = await Potree.loadPointCloud(pointCloudUrl);
+                    let pointcloud = result.pointcloud;
+                    let material = pointcloud.material;
+                    
+                    // Configure material properties
+                    material.minSize = 2;
+                    material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+                    // material.pointColorType = Potree.PointColorType.CLASSIFICATION;
+                    
+                    // Add point cloud to scene
+                    viewer.scene.addPointCloud(pointcloud);
+                    
+                    loadedClouds++;
+                    console.log(`Loaded ${loadedClouds}/${totalClouds} point clouds`);
+                    
+                    // Fit to screen after the last point cloud is loaded
+                    if (loadedClouds === totalClouds) {
+                        viewer.fitToScreen();
+                    }
+                } catch (error) {
+                    console.error(`Error loading point cloud ${pointCloudUrl}:`, error);
+                }
+            }
+        }
+        
+        // Start loading point clouds
+        loadPointClouds();
     </script>
 </body>
 
