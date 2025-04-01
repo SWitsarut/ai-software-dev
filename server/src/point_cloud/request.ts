@@ -12,6 +12,7 @@ import { Request } from '../model/request';
 import { UnprocessedData, UnprocessedDataStatus } from '../model/unprocessedData';
 import { Project } from '../model/project';
 import axios from '../axios';
+import { cal_init_price } from '../payments/calculate_price';
 
 const router = express.Router()
 
@@ -90,8 +91,12 @@ router.post('/request', authenticateToken, upload.array('files'), async (req, re
         name: dataName
     });
 
+    const init_price = cal_init_price(selectedLabels)
+
+
     const price = await axios.post<{ price: string | number }>(`/calculate_price`, {
-        path: updatedData.path
+        path: updatedData.path,
+        init_price: init_price
     }).catch(error => {
         console.error("Error in calculating price:", error);
         res.status(500).json({ error: "Error calculating price." });

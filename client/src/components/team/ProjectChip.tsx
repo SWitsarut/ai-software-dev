@@ -1,14 +1,12 @@
 import React, { useRef } from 'react'
-import { Project, ProjectStatus } from '../../pages/Team/TeamInfo'
-import { Grid, Paper, TableCell, TableRow } from '@mui/material'
+import { ProjectStatus } from '../../pages/Team/TeamInfo'
+import { TableCell, TableRow } from '@mui/material'
 import Chip from '@mui/material/Chip';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../../context/AuthProvider';
 import { useAuth } from '../../hooks/useAuth';
 
-
 interface ProjectProps {
-    key: string | number,
     name: string,
     createdAt: string,
     status: ProjectStatus,
@@ -42,21 +40,51 @@ const StatusChip = ({ status }: StatusChipProps) => {
     return <Chip label={status} color={color} />;
 }
 
-
 function ProjectChip(props: ProjectProps) {
     const formRef = useRef<HTMLFormElement>(null);
-    const dataInputRef = useRef<HTMLInputElement>(null);
-    const teamIdInputRef = useRef<HTMLInputElement>(null);
-    const tokenInputRef = useRef<HTMLInputElement>(null);
-    const { token } = useAuth()
+    const { token } = useAuth();
+    const navigate = useNavigate();
+
+    const handleClick = () => {
+        if (props.status === 'waiting') {
+            navigate(`/teams/id/${props.teamId}/projects/${props.id}/payment`);
+        } else {
+            submitForm();
+        }
+    };
 
     const submitForm = () => {
-        if (dataInputRef.current && formRef.current && teamIdInputRef.current && tokenInputRef.current) {
-            dataInputRef.current.value = props.id;
-            teamIdInputRef.current.value = props.teamId;
-            tokenInputRef.current.value = token || "";
-            formRef.current.submit();
-        }
+        // Create and submit a form programmatically instead of using a ref
+        const form = document.createElement('form');
+        form.action = API_URL + "/view";
+        form.method = "POST";
+        form.target = "_blank";
+
+        // Create and append project ID input
+        const projectIdInput = document.createElement('input');
+        projectIdInput.type = "hidden";
+        projectIdInput.name = "projectId";
+        projectIdInput.value = props.id;
+        form.appendChild(projectIdInput);
+
+        // Create and append team ID input
+        const teamIdInput = document.createElement('input');
+        teamIdInput.type = "hidden";
+        teamIdInput.name = "teamId";
+        teamIdInput.value = props.teamId;
+        form.appendChild(teamIdInput);
+
+        // Create and append token input
+        const tokenInput = document.createElement('input');
+        tokenInput.type = "hidden";
+        tokenInput.name = "token";
+        tokenInput.value = token || "";
+        form.appendChild(tokenInput);
+
+        // Append form to body, submit it, and remove it
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
     };
 
     const formatCreateDate = (dateString?: string) => {
@@ -73,33 +101,21 @@ function ProjectChip(props: ProjectProps) {
             hour12: false
         });
     }
+
     return (
-        <>
-            <TableRow key={props.key} sx={{
+        <TableRow
+            sx={{
                 cursor: 'pointer'
             }}
-                hover
-                onClick={submitForm}
-            >
-                <TableCell sx={{ width: '40%' }}>{props.name}</TableCell>
-                <TableCell align='right' sx={{ width: '20%' }}><StatusChip status={props.status} /></TableCell>
-                <TableCell align='right' sx={{ width: '20%' }}>{props.targets.length}</TableCell>
-                <TableCell align='right' sx={{ width: '20%' }}>{formatCreateDate(props.createdAt)}</TableCell>
-
-            </TableRow>
-            <form
-                ref={formRef}
-                action={API_URL + "/view"}
-                method="POST"
-                target='_blank'
-                id="dataForm"
-            >
-                <input type="hidden" name="projectId" ref={dataInputRef} />
-                <input type="hidden" name="teamId" ref={teamIdInputRef} />
-                <input type="hidden" name="token" ref={tokenInputRef} />
-            </form>
-        </>
-    )
+            hover
+            onClick={handleClick}
+        >
+            <TableCell sx={{ width: '40%' }}>{props.name}</TableCell>
+            <TableCell align='right' sx={{ width: '20%' }}><StatusChip status={props.status} /></TableCell>
+            <TableCell align='right' sx={{ width: '20%' }}>{props.targets.length}</TableCell>
+            <TableCell align='right' sx={{ width: '20%' }}>{formatCreateDate(props.createdAt)}</TableCell>
+        </TableRow>
+    );
 }
 
 export default ProjectChip

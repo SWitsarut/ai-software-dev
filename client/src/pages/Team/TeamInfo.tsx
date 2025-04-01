@@ -211,8 +211,8 @@ function TeamInfo() {
                             Team Members
                         </Typography>
                         <Grid container spacing={2}>
-                            {users.map((member) => (
-                                <Grid item xs={12} sm={6} key={member._id}>
+                            {users.map((member,index) => (
+                                <Grid item xs={12} sm={6} key={index}>
                                     <UserChip
                                         user={member.userId}
                                         additionalInfo={{
@@ -266,7 +266,7 @@ function TeamInfo() {
                                         projects.map((project, index) => (
                                             <ProjectChip
                                                 id={project._id}
-                                                key={index}
+                                                key={project._id}
                                                 name={project.name}
                                                 createdAt={project.createdAt}
                                                 status={project.status}

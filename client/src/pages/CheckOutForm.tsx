@@ -15,8 +15,17 @@ import {
 } from '@mui/material';
 import { API_URL } from '../context/AuthProvider';
 
+interface ProjectData {
+  _id: string;
+  name: string;
+  amount: number;
+  currency: string;
+}
+
 interface PaymentIntentResponse {
   clientSecret: string;
+  amount: number;
+  currency: string;
 }
 
 // Custom hook to load Stripe public key
@@ -29,9 +38,9 @@ const useStripeKey = () => {
     const fetchStripeKey = async () => {
       try {
         const response = await axios.get<string>(`${API_URL}/get_public_stripe`);
-        const publicKey = response.data; 
-        if(!publicKey){
-          throw new Error('no')
+        const publicKey = response.data;
+        if (!publicKey) {
+          throw new Error('Failed to retrieve Stripe public key');
         }
         setStripePromise(loadStripe(publicKey));
       } catch (err) {
@@ -47,6 +56,7 @@ const useStripeKey = () => {
 
   return { stripePromise, loading, error };
 };
+
 
 // The inner form component that handles the payment logic
 const PaymentForm = () => {
@@ -158,9 +168,9 @@ const PaymentForm = () => {
         {loading ? <CircularProgress size={24} /> : `Pay $${amount}`}
       </Button>
 
-      <Snackbar 
-        open={error !== null} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={error !== null}
+        autoHideDuration={6000}
         onClose={() => setError(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
@@ -169,9 +179,9 @@ const PaymentForm = () => {
         </Alert>
       </Snackbar>
 
-      <Snackbar 
-        open={success} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={success}
+        autoHideDuration={6000}
         onClose={() => setSuccess(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >

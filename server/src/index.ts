@@ -14,7 +14,7 @@ import request_end_point from "./point_cloud/request"
 import { Objects } from './model/objects';
 import { User } from './model/user';
 import { Project } from './model/project';
-import projects from "./Project/projects"
+import projects_end_point from "./Project/projects"
 import authenticateToken from './middleware/authenticateToken';
 import { StatusCodes } from 'http-status-codes';
 import objects_end_point from "./Project/objects"
@@ -53,7 +53,7 @@ app.use('/', payments)
 app.use('/point_cloud', request_end_point)
 app.use('/objects', objects_end_point)
 app.use('/teams', teams)
-app.use('/projects', projects)
+app.use('/projects', projects_end_point)
 
 
 async function getPotreeSubdirectories(baseDir: string): Promise<string[]> {

@@ -20,6 +20,7 @@ import Buy from "./pages/Project/Buy";
 import MultipleFileUpload from "./pages/MultipleFileUpload";
 import Hire from "./pages/Project/Hire";
 import PestControlIcon from '@mui/icons-material/PestControl';
+import ProjectPayment from "./pages/Project/ProjectPayment";
 // Create an initial set of routes for type safety
 export const baseOptions: SideBarItemProps[] = [
   { name: "Dashboard", path: "/", icon: <HomeIcon /> },
@@ -83,6 +84,11 @@ function App() {
           <Route path="/teams/id/:id" element={
             <ProtectedRoute>
               <TeamInfo />
+            </ProtectedRoute>
+          } />
+          <Route path="/teams/id/:teamId/projects/:projectId/payment" element={
+            <ProtectedRoute>
+              <ProjectPayment />
             </ProtectedRoute>
           } />
           <Route path="/teams/id/:id/buy" element={
