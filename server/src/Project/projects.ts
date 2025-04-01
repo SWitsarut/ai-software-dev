@@ -86,7 +86,8 @@ router.post(`/payment-intent`, authenticateToken, async (req, res): Promise<any>
             currency: currency,
             metadata: {
                 projectId: project._id.toString(),
-                teamId: project.teamId.toString()
+                teamId: project.teamId.toString(),
+                isBuy: project.isBuy || 0,
             }
         });
 

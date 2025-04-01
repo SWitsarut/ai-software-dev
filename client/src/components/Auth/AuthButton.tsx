@@ -106,7 +106,7 @@ function AuthButton({ sidebar_open }: props) {
               justifyContent: 'center',
             }}
           >
-            <Avatar src={user?.avatar} />
+            <Avatar src={imageLocation(user?.avatar||"")} />
           </ListItemIcon>
           <ListItemText
             primary="Sign In"

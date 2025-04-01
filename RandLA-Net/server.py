@@ -69,13 +69,13 @@ def handle_clustering():
 def calculate_price():
     data = request.get_json()
     file_path = data.get("path")
-    init_price = data.get('init_price')
-    price = 50 + init_price
+    price = 50 
     for file in os.listdir(file_path):
         print()
         with laspy.open(os.path.join(file_path, file)) as f:
             las = f.read()  
             points = len(las.points)
+            print(points)
             price += points / 1000.0 * 0.05
     # Round the price to 2 decimal places
     price = round(price, 2)

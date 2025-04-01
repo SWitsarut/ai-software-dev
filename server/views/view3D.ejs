@@ -109,69 +109,6 @@
 
         // Function to create area measurements for all polygons
         // Function to create area measurements with 8 points instead of 4
-        // function createAreaMeasurements() {
-        //     // Clear existing measurements
-        //     clearAreaMeasurements();
-
-        //     // Create a measurement for each polygon
-        //     areaPolygons.forEach((area, index) => {
-        //         if (area.corners && area.corners.length >= 3) {
-        //             // Create a new area measurement
-        //             const measure = new Potree.Measure();
-        //             measure.name = `Area ${index + 1}`;
-        //             measure.closed = true;
-        //             measure.showArea = true;
-
-        //             // Get the existing 4 corner points
-        //             const corners = area.corners;
-
-        //             // Extract min and max coordinates
-        //             const minX = Math.min(...corners.map(p => p.x));
-        //             const maxX = Math.max(...corners.map(p => p.x));
-        //             const minY = Math.min(...corners.map(p => p.y));
-        //             const maxY = Math.max(...corners.map(p => p.y));
-        //             const minZ = Math.min(...corners.map(p => p.z || 0));
-        //             const maxZ = Math.max(...corners.map(p => p.z || 0));
-
-        //             // Calculate midpoints for the 8-point measurement
-        //             const midX = (minX + maxX) / 2;
-        //             const midY = (minY + maxY) / 2;
-
-        //             // Create 8 points (clockwise order)
-        //             // const eightPoints = [
-        //             //     new THREE.Vector3(minX, minY, minZ),          // Bottom-left
-        //             //     new THREE.Vector3(midX, minY, minZ),          // Bottom-middle
-        //             //     new THREE.Vector3(maxX, minY, minZ),          // Bottom-right
-        //             //     new THREE.Vector3(maxX, midY, minZ),          // Middle-right
-        //             //     new THREE.Vector3(maxX, maxY, minZ),          // Top-right
-        //             //     new THREE.Vector3(midX, maxY, minZ),          // Top-middle
-        //             //     new THREE.Vector3(minX, maxY, minZ),          // Top-left
-        //             //     new THREE.Vector3(minX, midY, minZ)           // Middle-left
-        //             // ];
-        //             const eightPoints = [
-        //             new THREE.Vector3(minX, minY, minZ),  // Bottom-front-left
-        //             new THREE.Vector3(maxX, minY, minZ),  // Bottom-front-right
-        //             new THREE.Vector3(maxX, maxY, minZ),  // Bottom-back-right
-        //             new THREE.Vector3(minX, maxY, minZ),  // Bottom-back-left
-        //             new THREE.Vector3(minX, minY, maxZ),  // Top-front-left
-        //             new THREE.Vector3(maxX, minY, maxZ),  // Top-front-right
-        //             new THREE.Vector3(maxX, maxY, maxZ),  // Top-back-right
-        //             new THREE.Vector3(minX, maxY, maxZ)   // Top-back-left
-        //         ];
-
-        //             // Add markers for each point
-        //             for (const point of eightPoints) {
-        //                 measure.addMarker(point);
-        //             }
-
-        //             // Add the measurement to the scene
-        //             viewer.scene.addMeasurement(measure);
-
-        //             // Store the measurement
-        //             areaMeasurements.push(measure);
-        //         }
-        //     });
-        // }
         function createAreaMeasurements() {
             // Clear existing measurements
             clearAreaMeasurements();
@@ -179,14 +116,16 @@
             // Create a measurement for each polygon
             areaPolygons.forEach((area, index) => {
                 if (area.corners && area.corners.length >= 3) {
+                    // Create a new area measurement
                     const measure = new Potree.Measure();
                     measure.name = `Area ${index + 1}`;
-                    measure.closed = true; // Close shape to form a box
+                    measure.closed = true;
                     measure.showArea = true;
 
+                    // Get the existing 4 corner points
                     const corners = area.corners;
 
-                    // Get min and max coordinates
+                    // Extract min and max coordinates
                     const minX = Math.min(...corners.map(p => p.x));
                     const maxX = Math.max(...corners.map(p => p.x));
                     const minY = Math.min(...corners.map(p => p.y));
@@ -194,28 +133,131 @@
                     const minZ = Math.min(...corners.map(p => p.z || 0));
                     const maxZ = Math.max(...corners.map(p => p.z || 0));
 
-                    // Define 8 points for the cube (dice shape)
-                    const cubeCorners = [
-                        new THREE.Vector3(minX, minY, minZ),  // Bottom-front-left
-                        new THREE.Vector3(maxX, minY, minZ),  // Bottom-front-right
-                        new THREE.Vector3(maxX, maxY, minZ),  // Bottom-back-right
-                        new THREE.Vector3(minX, maxY, minZ),  // Bottom-back-left
+                    // Calculate midpoints for the 8-point measurement
+                    const midX = (minX + maxX) / 2;
+                    const midY = (minY + maxY) / 2;
 
-                        new THREE.Vector3(minX, minY, maxZ),  // Top-front-left
-                        new THREE.Vector3(maxX, minY, maxZ),  // Top-front-right
-                        new THREE.Vector3(maxX, maxY, maxZ),  // Top-back-right
-                        new THREE.Vector3(minX, maxY, maxZ)   // Top-back-left
-                    ];
 
-                    // Add markers for each point (Potree will handle the connections)
-                    cubeCorners.forEach(point => measure.addMarker(point));
+                    const eightPoints = [
+                    new THREE.Vector3(minX, minY, minZ),  // Bottom-front-left
+                    new THREE.Vector3(maxX, minY, minZ),  // Bottom-front-right
+                    new THREE.Vector3(maxX, maxY, minZ),  // Bottom-back-right
+                    new THREE.Vector3(minX, maxY, minZ),  // Bottom-back-left
+                    new THREE.Vector3(minX, minY, maxZ),  // Top-front-left
+                    new THREE.Vector3(maxX, minY, maxZ),  // Top-front-right
+                    new THREE.Vector3(maxX, maxY, maxZ),  // Top-back-right
+                    new THREE.Vector3(minX, maxY, maxZ)   // Top-back-left
+                ];
+
+                    // Add markers for each point
+                    for (const point of eightPoints) {
+                        measure.addMarker(point);
+                    }
 
                     // Add the measurement to the scene
                     viewer.scene.addMeasurement(measure);
+
+                    // Store the measurement
                     areaMeasurements.push(measure);
                 }
             });
         }
+//         function createAreaMeasurements() {
+//     // Clear existing measurements
+//     clearAreaMeasurements();
+
+//     // Create a measurement for each polygon
+//     areaPolygons.forEach((area, index) => {
+//         if (area.corners && area.corners.length >= 3) {
+//             // Get min and max coordinates from the corners
+//             const corners = area.corners;
+//             const minX = Math.min(...corners.map(p => p.x));
+//             const maxX = Math.max(...corners.map(p => p.x));
+//             const minY = Math.min(...corners.map(p => p.y));
+//             const maxY = Math.max(...corners.map(p => p.y));
+//             const minZ = Math.min(...corners.map(p => p.z || 0));
+//             const maxZ = Math.max(...corners.map(p => p.z || 0));
+            
+//             // Create separate measurements for each face of the cube
+//             // Bottom face
+//             const bottomFace = new Potree.Measure();
+//             bottomFace.name = `Area ${index + 1} - Bottom`;
+//             bottomFace.closed = true;
+//             bottomFace.showArea = true;
+            
+//             bottomFace.addMarker(new THREE.Vector3(minX, minY, minZ)); // Front-left
+//             bottomFace.addMarker(new THREE.Vector3(maxX, minY, minZ)); // Front-right
+//             bottomFace.addMarker(new THREE.Vector3(maxX, maxY, minZ)); // Back-right
+//             bottomFace.addMarker(new THREE.Vector3(minX, maxY, minZ)); // Back-left
+            
+//             // Top face
+//             const topFace = new Potree.Measure();
+//             topFace.name = `Area ${index + 1} - Top`;
+//             topFace.closed = true;
+//             topFace.showArea = true;
+            
+//             topFace.addMarker(new THREE.Vector3(minX, minY, maxZ)); // Front-left
+//             topFace.addMarker(new THREE.Vector3(maxX, minY, maxZ)); // Front-right
+//             topFace.addMarker(new THREE.Vector3(maxX, maxY, maxZ)); // Back-right
+//             topFace.addMarker(new THREE.Vector3(minX, maxY, maxZ)); // Back-left
+            
+//             // Front face
+//             const frontFace = new Potree.Measure();
+//             frontFace.name = `Area ${index + 1} - Front`;
+//             frontFace.closed = true;
+//             frontFace.showArea = true;
+            
+//             frontFace.addMarker(new THREE.Vector3(minX, minY, minZ)); // Bottom-left
+//             frontFace.addMarker(new THREE.Vector3(maxX, minY, minZ)); // Bottom-right
+//             frontFace.addMarker(new THREE.Vector3(maxX, minY, maxZ)); // Top-right
+//             frontFace.addMarker(new THREE.Vector3(minX, minY, maxZ)); // Top-left
+            
+//             // Back face
+//             const backFace = new Potree.Measure();
+//             backFace.name = `Area ${index + 1} - Back`;
+//             backFace.closed = true;
+//             backFace.showArea = true;
+            
+//             backFace.addMarker(new THREE.Vector3(minX, maxY, minZ)); // Bottom-left
+//             backFace.addMarker(new THREE.Vector3(maxX, maxY, minZ)); // Bottom-right
+//             backFace.addMarker(new THREE.Vector3(maxX, maxY, maxZ)); // Top-right
+//             backFace.addMarker(new THREE.Vector3(minX, maxY, maxZ)); // Top-left
+            
+//             // Left face
+//             const leftFace = new Potree.Measure();
+//             leftFace.name = `Area ${index + 1} - Left`;
+//             leftFace.closed = true;
+//             leftFace.showArea = true;
+            
+//             leftFace.addMarker(new THREE.Vector3(minX, minY, minZ)); // Bottom-front
+//             leftFace.addMarker(new THREE.Vector3(minX, maxY, minZ)); // Bottom-back
+//             leftFace.addMarker(new THREE.Vector3(minX, maxY, maxZ)); // Top-back
+//             leftFace.addMarker(new THREE.Vector3(minX, minY, maxZ)); // Top-front
+            
+//             // Right face
+//             const rightFace = new Potree.Measure();
+//             rightFace.name = `Area ${index + 1} - Right`;
+//             rightFace.closed = true;
+//             rightFace.showArea = true;
+            
+//             rightFace.addMarker(new THREE.Vector3(maxX, minY, minZ)); // Bottom-front
+//             rightFace.addMarker(new THREE.Vector3(maxX, maxY, minZ)); // Bottom-back
+//             rightFace.addMarker(new THREE.Vector3(maxX, maxY, maxZ)); // Top-back
+//             rightFace.addMarker(new THREE.Vector3(maxX, minY, maxZ)); // Top-front
+            
+//             // Add all faces to the scene
+//             viewer.scene.addMeasurement(bottomFace);
+//             viewer.scene.addMeasurement(topFace);
+//             viewer.scene.addMeasurement(frontFace);
+//             viewer.scene.addMeasurement(backFace);
+//             viewer.scene.addMeasurement(leftFace);
+//             viewer.scene.addMeasurement(rightFace);
+            
+//             // Store all measurements
+//             areaMeasurements.push(bottomFace, topFace, frontFace, backFace, leftFace, rightFace);
+//         }
+//     });
+// }
 
 
         // Function to clear all area measurements

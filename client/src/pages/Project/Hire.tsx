@@ -30,7 +30,7 @@ function Buy() {
     const [dataName, setDataName] = useState<string>("")
     const [files, setFiles] = useState<FileList | null>(null);
     const [totalSize, setTotalSize] = useState<number>(0);
-    const [selectedLabels, setSelectedLabels] = useState<number[]>([23, 24, 12, 1, 17]); // Default from server code
+    const [selectedLabels, setSelectedLabels] = useState<number[]>([23, 24, 12, 17]); // Default from server code
     const [teamId,setTeamId] =useState<string>("")
 
     const MAX_SIZE_LIMIT = 2 * 1024 * 1024 * 1024; // 2GB in bytes

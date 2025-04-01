@@ -117,7 +117,7 @@ router.post('/login', async (req, res): Promise<any> => {
     // console.log('req.body', req.body)
     const user = await User.findOne({ userId });
     if (!user) {
-        console.log('user', user);
+        // console.log('user', user);
         return res.status(401).json({ error: { userId: "Wrong Username" } });
     }
 
@@ -147,7 +147,7 @@ router.post('/login', async (req, res): Promise<any> => {
 });
 
 router.post('/update', authenticateToken, uploadImage.single('image'), async (req, res): Promise<any> => {
-    console.log('here')
+    // console.log('here')
     const { name } = req.body;
     const image = req.file;
     if (!image && !name) {
@@ -159,7 +159,7 @@ router.post('/update', authenticateToken, uploadImage.single('image'), async (re
         let filepath = undefined
         if (image) {
             const filename = image.filename;
-            filepath = `http://${process.env.API_HOST}:${process.env.API_PORT}/public/images/${filename}`
+            filepath = `${filename}`
         }
         const newUserData = await User.findOneAndUpdate({ userId: req.user?.userId }, { name, avatar: filepath || "" }, { new: true, runValidators: true });
 

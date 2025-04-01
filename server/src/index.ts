@@ -59,7 +59,6 @@ app.use('/projects', projects_end_point)
 async function getPotreeSubdirectories(baseDir: string): Promise<string[]> {
   try {
     const dirs = await fs.promises.readdir(baseDir)
-    console.log('dirs', dirs)
     return dirs
   } catch (error) {
     console.log('error', error)
@@ -87,7 +86,7 @@ app.post('/view', async (req, res): Promise<any> => {
   const projectId = req.body.projectId;
   const teamId = req.body.teamId;
   const token = req.body.token;
-  console.log(token);
+  // console.log(token);
 
   if (!token) return res.status(StatusCodes.FORBIDDEN).json({ "error": "You don't have access" });
 
@@ -129,7 +128,7 @@ app.post('/view', async (req, res): Promise<any> => {
     // console.log('dirsdirs', dirs)
 
     const areasData = await Objects.find({ dataId: project.dataId._id })
-    console.log('areasData', areasData)
+    // console.log('areasData', areasData)
     const data = {
       dataName: project.name,
       potreeDirs: datas,

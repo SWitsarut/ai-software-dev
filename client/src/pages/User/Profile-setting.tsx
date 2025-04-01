@@ -23,6 +23,7 @@ import axios from "../../utils/axios"
 import Loading from '../../components/Loading'
 import { User } from '../../context/AuthProvider'
 import { useNavigate } from 'react-router-dom'
+import imageLocation from '../../utils/imageLocation'
 
 
 interface UpdateRes {
@@ -45,7 +46,7 @@ function ProfileSetting() {
         setNewName(user?.name || "")
         setImagePreview(null)
     }
-    
+
     const handleSave = async () => {
         const formData = new FormData();
 
@@ -148,7 +149,7 @@ function ProfileSetting() {
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} alignItems="center">
                             <Box sx={{ position: 'relative' }}>
                                 <Avatar
-                                    src={imagePreview || ""}
+                                    src={imageLocation(imagePreview || "")}
                                     variant="rounded"
                                     sx={{
                                         width: 140,

@@ -5,7 +5,8 @@ import { v4 as uuidv4 } from 'uuid'
 export enum UnprocessedDataStatus {
     CREATED = "Created",
     UPLOADED = "Uploaded",
-    MANUAL = "Manual"
+    MANUAL = "Manual",
+    PROCESSED = "Processed"
 }
 
 
@@ -20,6 +21,9 @@ const UnprocessedDataSchema = new mongoose.Schema(
             ref: "Users",
             require: true,
 
+        },
+        price: {
+            type: Number,
         },
         path: {
             type: String,

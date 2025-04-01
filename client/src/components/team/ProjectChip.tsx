@@ -25,6 +25,9 @@ const StatusChip = ({ status }: StatusChipProps) => {
 
     switch (status) {
         case 'waiting':
+            color = 'default'; // yellow
+            break;
+        case 'processing':
             color = 'warning'; // yellow
             break;
         case 'paid':
@@ -41,7 +44,7 @@ const StatusChip = ({ status }: StatusChipProps) => {
 }
 
 function ProjectChip(props: ProjectProps) {
-    const formRef = useRef<HTMLFormElement>(null);
+    // const formRef = useRef<HTMLFormElement>(null);
     const { token } = useAuth();
     const navigate = useNavigate();
 

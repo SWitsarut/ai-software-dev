@@ -71,7 +71,7 @@ const DataForm: React.FC<DataFormProps> = ({
   const selectedLabelsRef = useRef<HTMLInputElement>(null);
 
   // State for selected labels
-  const [selectedLabels, setSelectedLabels] = useState<number[]>([23, 24, 12, 1, 17]); // Default from server code
+  const [selectedLabels, setSelectedLabels] = useState<number[]>([23, 24, 12, 17]); // Default from server code
   const [showLabels, setShowLabels] = useState<boolean>(false);
 
   // Convert labels to array for easier mapping

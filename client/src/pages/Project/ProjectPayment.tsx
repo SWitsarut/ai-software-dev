@@ -73,7 +73,6 @@ const PaymentForm = ({ projectId, teamId }: ProjectPaymentProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
-  const { token } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [projectLoading, setProjectLoading] = useState(true);
@@ -131,8 +130,9 @@ const PaymentForm = ({ projectId, teamId }: ProjectPaymentProps) => {
       const { data } = await axios.post<PaymentIntentResponse>(
         `/projects/payment-intent`,
         {
-          teamId:teamId,
-          projectId:projectId
+          teamId: teamId,
+          projectId: projectId,
+          isBuy: false,
         },
       );
 

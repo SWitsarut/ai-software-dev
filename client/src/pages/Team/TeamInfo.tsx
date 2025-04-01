@@ -53,7 +53,7 @@ export interface TeamMember {
     _id: string;
 }
 
-export type ProjectStatus = "waiting" | "paid" | "cancel";
+export type ProjectStatus = "waiting" | "paid" | "cancel" | "processing";
 
 
 export interface Project {
@@ -82,7 +82,6 @@ function TeamInfo() {
     const [error, setError] = useState<string | null>(null);
     const [caller, setCaller] = useState<string>("User")
     const [teamInfo, setTeamInfo] = useState<TeamWithDetailed>()
-
     const [projects, setProjects] = useState<Project[] | null>(null);
 
     const updateUserRole = async (id: string, newRole: string) => {
@@ -211,7 +210,7 @@ function TeamInfo() {
                             Team Members
                         </Typography>
                         <Grid container spacing={2}>
-                            {users.map((member,index) => (
+                            {users.map((member, index) => (
                                 <Grid item xs={12} sm={6} key={index}>
                                     <UserChip
                                         user={member.userId}

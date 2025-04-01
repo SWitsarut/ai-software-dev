@@ -3,7 +3,8 @@ import mongoose from "mongoose";
 export enum PaymentStatus {
     cancel = 'cancel',
     paid = 'paid',
-    waiting = 'waiting'
+    waiting = 'waiting',
+    processing = 'processing'
 }
 
 const ProjectSchema = new mongoose.Schema(
@@ -17,6 +18,9 @@ const ProjectSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "unprocessedData",
             required: true,
+        },
+        isBuy: {
+            type: Number,
         },
         name: {
             type: String,

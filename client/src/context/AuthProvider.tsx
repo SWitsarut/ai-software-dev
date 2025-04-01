@@ -58,6 +58,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [token, setToken] = useState<string | null>(localStorage.getItem('authToken'));
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    
+    console.log('user', user)
 
     // Check if user is already logged in
     useEffect(() => {
