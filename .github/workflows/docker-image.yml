@@ -1,0 +1,93 @@
+name: Docker CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Removed container: block to give more disk and Docker support
+    steps:
+      - 
+        name: Check disk space
+        run: df . -h
+      - 
+        name: Free disk space
+        run: |
+          sudo docker rmi $(docker image ls -aq) >/dev/null 2>&1 || true
+          sudo rm -rf \
+            /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /usr/local/share/powershell /usr/share/swift /usr/local/.ghcup \
+            /usr/lib/jvm || true
+          echo "some directories deleted"
+          sudo apt install aptitude -y >/dev/null 2>&1
+          sudo aptitude purge aria2 ansible azure-cli shellcheck rpm xorriso zsync \
+            esl-erlang firefox gfortran-8 gfortran-9 google-chrome-stable \
+            google-cloud-sdk imagemagick \
+            libmagickcore-dev libmagickwand-dev libmagic-dev ant ant-optional kubectl \
+            mercurial apt-transport-https mono-complete libmysqlclient \
+            unixodbc-dev yarn chrpath libssl-dev libxft-dev \
+            libfreetype6 libfreetype6-dev libfontconfig1 libfontconfig1-dev \
+            snmp pollinate libpq-dev postgresql-client powershell ruby-full \
+            sphinxsearch subversion mongodb-org azure-cli microsoft-edge-stable \
+            -y -f >/dev/null 2>&1
+          sudo aptitude purge google-cloud-sdk -f -y >/dev/null 2>&1
+          sudo aptitude purge microsoft-edge-stable -f -y >/dev/null 2>&1 || true
+          sudo apt purge microsoft-edge-stable -f -y >/dev/null 2>&1 || true
+          sudo aptitude purge '~n ^mysql' -f -y >/dev/null 2>&1
+          sudo aptitude purge '~n ^php' -f -y >/dev/null 2>&1
+          sudo aptitude purge '~n ^dotnet' -f -y >/dev/null 2>&1
+          sudo apt-get autoremove -y >/dev/null 2>&1
+          sudo apt-get autoclean -y >/dev/null 2>&1
+          echo "some packages purged"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Docker Compose
+        run: |
+          docker-compose version || (
+            curl -L "https://github.com/docker/compose/releases/download/v2.34.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose &&
+            chmod +x /usr/local/bin/docker-compose &&
+            docker-compose --version
+          )
+      
+      - name: Create .env global
+        run: |
+          echo "MONGO_INITDB_ROOT_USERNAME=${{env.GLOBAL_MONGO_INITDB_ROOT_USERNAME}}" >> .env
+          echo "MONGO_INITDB_ROOT_PASSWORD=${{env.GLOBAL_MONGO_INITDB_ROOT_PASSWORD}}" >> .env
+          echo "API_PORT=${{env.GLOBAL_API_PORT}}" >> .env
+          echo "STRIPE_PRIVATE=${{env.GLOBAL_STRIPE_PRIVATE}}" >> .env
+
+      - name: Create .env server file
+        run: |
+          echo "API_HOST=${{env.SERVER_API_HOST}}" >> ./server/.env
+          echo "API_PORT=${{env.SERVER_API_PORT}}" >> ./server/.env
+          echo "DB_HOST=${{env.SERVER_DB_HOST}}" >> ./server/.env
+          echo "DB_PORT=${{env.SERVER_DB_PORT}}" >> ./server/.env
+          echo "DB_NAME=${{env.SERVER_DB_NAME}}" >> ./server/.env
+          echo "MONGO_USERNAME=${{env.SERVER_MONGO_USERNAME}}" >> ./server/.env
+          echo "MONGO_PASSWORD=${{env.SERVER_MONGO_PASSWORD}}" >> ./server/.env
+          echo "STRIPE_PUBLIC=${{env.SERVER_STRIPE_PUBLIC}}" >> ./server/.env
+          echo "STRIPE_PRIVATE=${{env.SERVER_STRIPE_PRIVATE}}" >> ./server/.env
+          echo "WEBHOOK_SECRET=${{env.SERVER_WEBHOOK_SECRET}}" >> ./server/.env
+          echo "ACCESS_TOKEN_SECRET=${{env.SERVER_ACCESS_TOKEN_SECRET}}" >> ./server/.env
+          echo "MODEL_SERVER_ENDPOINT=${{env.SERVER_MODEL_SERVER_ENDPOINT}}" >> ./server/.env
+
+      - name: Create .env client file
+        run: |
+          echo "REACT_APP_STRIPE_PUBLISHABLE_KEY=${{env.CLIENT_REACT_APP_STRIPE_PUBLISHABLE_KEY}}" >> ./client/.env
+
+      - name: Build and run containers with Docker Compose
+        run: |
+          docker-compose -f docker-compose.yaml --env-file .env up --build -d
+
+      - name: Wait for containers to be ready
+        run: sleep 120
+
+      - name: Stop Docker containers
+        run: docker-compose down
