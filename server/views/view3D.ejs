@@ -55,13 +55,11 @@
         </div>
         <div id="potree_sidebar_container">
         </div>
+        <div id="measurement-controls">
+            
+        </div>
     </div>
 
-    <!-- Measurement Control Buttons -->
-    <div id="measurement-controls">
-        <button id="show-areas-btn">Show All Areas</button>
-        <button id="clear-areas-btn">Clear All Areas</button>
-    </div>
 
     <!-- Main Application Script -->
     <script type="module">
@@ -104,179 +102,45 @@
         const areaPolygons = <%- JSON.stringify(areasData) %>;
         console.log("Area polygons:", areaPolygons);
 
-        // Array to store all area measurements
-        let areaMeasurements = [];
+        let sceneSG = new Potree.Scene();
+        viewer.setScene(sceneSG)
 
-        // Function to create area measurements for all polygons
-        // Function to create area measurements with 8 points instead of 4
-        function createAreaMeasurements() {
-            // Clear existing measurements
-            clearAreaMeasurements();
+        function addAmount(){
 
-            // Create a measurement for each polygon
-            areaPolygons.forEach((area, index) => {
-                if (area.corners && area.corners.length >= 3) {
-                    // Create a new area measurement
-                    const measure = new Potree.Measure();
-                    measure.name = `Area ${index + 1}`;
-                    measure.closed = true;
-                    measure.showArea = true;
-
-                    // Get the existing 4 corner points
-                    const corners = area.corners;
-
-                    // Extract min and max coordinates
-                    const minX = Math.min(...corners.map(p => p.x));
-                    const maxX = Math.max(...corners.map(p => p.x));
-                    const minY = Math.min(...corners.map(p => p.y));
-                    const maxY = Math.max(...corners.map(p => p.y));
-                    const minZ = Math.min(...corners.map(p => p.z || 0));
-                    const maxZ = Math.max(...corners.map(p => p.z || 0));
-
-                    // Calculate midpoints for the 8-point measurement
-                    const midX = (minX + maxX) / 2;
-                    const midY = (minY + maxY) / 2;
-
-
-                    const eightPoints = [
-                    new THREE.Vector3(minX, minY, minZ),  // Bottom-front-left
-                    new THREE.Vector3(maxX, minY, minZ),  // Bottom-front-right
-                    new THREE.Vector3(maxX, maxY, minZ),  // Bottom-back-right
-                    new THREE.Vector3(minX, maxY, minZ),  // Bottom-back-left
-                    new THREE.Vector3(minX, minY, maxZ),  // Top-front-left
-                    new THREE.Vector3(maxX, minY, maxZ),  // Top-front-right
-                    new THREE.Vector3(maxX, maxY, maxZ),  // Top-back-right
-                    new THREE.Vector3(minX, maxY, maxZ)   // Top-back-left
-                ];
-
-                    // Add markers for each point
-                    for (const point of eightPoints) {
-                        measure.addMarker(point);
-                    }
-
-                    // Add the measurement to the scene
-                    viewer.scene.addMeasurement(measure);
-
-                    // Store the measurement
-                    areaMeasurements.push(measure);
-                }
-            });
-        }
-//         function createAreaMeasurements() {
-//     // Clear existing measurements
-//     clearAreaMeasurements();
-
-//     // Create a measurement for each polygon
-//     areaPolygons.forEach((area, index) => {
-//         if (area.corners && area.corners.length >= 3) {
-//             // Get min and max coordinates from the corners
-//             const corners = area.corners;
-//             const minX = Math.min(...corners.map(p => p.x));
-//             const maxX = Math.max(...corners.map(p => p.x));
-//             const minY = Math.min(...corners.map(p => p.y));
-//             const maxY = Math.max(...corners.map(p => p.y));
-//             const minZ = Math.min(...corners.map(p => p.z || 0));
-//             const maxZ = Math.max(...corners.map(p => p.z || 0));
-            
-//             // Create separate measurements for each face of the cube
-//             // Bottom face
-//             const bottomFace = new Potree.Measure();
-//             bottomFace.name = `Area ${index + 1} - Bottom`;
-//             bottomFace.closed = true;
-//             bottomFace.showArea = true;
-            
-//             bottomFace.addMarker(new THREE.Vector3(minX, minY, minZ)); // Front-left
-//             bottomFace.addMarker(new THREE.Vector3(maxX, minY, minZ)); // Front-right
-//             bottomFace.addMarker(new THREE.Vector3(maxX, maxY, minZ)); // Back-right
-//             bottomFace.addMarker(new THREE.Vector3(minX, maxY, minZ)); // Back-left
-            
-//             // Top face
-//             const topFace = new Potree.Measure();
-//             topFace.name = `Area ${index + 1} - Top`;
-//             topFace.closed = true;
-//             topFace.showArea = true;
-            
-//             topFace.addMarker(new THREE.Vector3(minX, minY, maxZ)); // Front-left
-//             topFace.addMarker(new THREE.Vector3(maxX, minY, maxZ)); // Front-right
-//             topFace.addMarker(new THREE.Vector3(maxX, maxY, maxZ)); // Back-right
-//             topFace.addMarker(new THREE.Vector3(minX, maxY, maxZ)); // Back-left
-            
-//             // Front face
-//             const frontFace = new Potree.Measure();
-//             frontFace.name = `Area ${index + 1} - Front`;
-//             frontFace.closed = true;
-//             frontFace.showArea = true;
-            
-//             frontFace.addMarker(new THREE.Vector3(minX, minY, minZ)); // Bottom-left
-//             frontFace.addMarker(new THREE.Vector3(maxX, minY, minZ)); // Bottom-right
-//             frontFace.addMarker(new THREE.Vector3(maxX, minY, maxZ)); // Top-right
-//             frontFace.addMarker(new THREE.Vector3(minX, minY, maxZ)); // Top-left
-            
-//             // Back face
-//             const backFace = new Potree.Measure();
-//             backFace.name = `Area ${index + 1} - Back`;
-//             backFace.closed = true;
-//             backFace.showArea = true;
-            
-//             backFace.addMarker(new THREE.Vector3(minX, maxY, minZ)); // Bottom-left
-//             backFace.addMarker(new THREE.Vector3(maxX, maxY, minZ)); // Bottom-right
-//             backFace.addMarker(new THREE.Vector3(maxX, maxY, maxZ)); // Top-right
-//             backFace.addMarker(new THREE.Vector3(minX, maxY, maxZ)); // Top-left
-            
-//             // Left face
-//             const leftFace = new Potree.Measure();
-//             leftFace.name = `Area ${index + 1} - Left`;
-//             leftFace.closed = true;
-//             leftFace.showArea = true;
-            
-//             leftFace.addMarker(new THREE.Vector3(minX, minY, minZ)); // Bottom-front
-//             leftFace.addMarker(new THREE.Vector3(minX, maxY, minZ)); // Bottom-back
-//             leftFace.addMarker(new THREE.Vector3(minX, maxY, maxZ)); // Top-back
-//             leftFace.addMarker(new THREE.Vector3(minX, minY, maxZ)); // Top-front
-            
-//             // Right face
-//             const rightFace = new Potree.Measure();
-//             rightFace.name = `Area ${index + 1} - Right`;
-//             rightFace.closed = true;
-//             rightFace.showArea = true;
-            
-//             rightFace.addMarker(new THREE.Vector3(maxX, minY, minZ)); // Bottom-front
-//             rightFace.addMarker(new THREE.Vector3(maxX, maxY, minZ)); // Bottom-back
-//             rightFace.addMarker(new THREE.Vector3(maxX, maxY, maxZ)); // Top-back
-//             rightFace.addMarker(new THREE.Vector3(maxX, minY, maxZ)); // Top-front
-            
-//             // Add all faces to the scene
-//             viewer.scene.addMeasurement(bottomFace);
-//             viewer.scene.addMeasurement(topFace);
-//             viewer.scene.addMeasurement(frontFace);
-//             viewer.scene.addMeasurement(backFace);
-//             viewer.scene.addMeasurement(leftFace);
-//             viewer.scene.addMeasurement(rightFace);
-            
-//             // Store all measurements
-//             areaMeasurements.push(bottomFace, topFace, frontFace, backFace, leftFace, rightFace);
-//         }
-//     });
-// }
-
-
-        // Function to clear all area measurements
-        function clearAreaMeasurements() {
-            areaMeasurements.forEach(measure => {
-                viewer.scene.removeMeasurement(measure);
-            });
-            areaMeasurements = [];
         }
 
-        // Setup button event handlers
-        document.getElementById('show-areas-btn').addEventListener('click', () => {
-            createAreaMeasurements();
-        });
+        function addCesium(){
+            let cp = new Cesium.Cartesian3(areaPolygons, 552161.235598733, 4660771.704035539);
 
-        document.getElementById('clear-areas-btn').addEventListener('click', () => {
-            clearAreaMeasurements();
-        });
+        }
 
+        async function addAnnotations(objects){
+
+
+            console.log('objects is',objects)
+            for (const item of objects){
+                // console.log('item',item)
+
+                let elTitle = $(`
+                    <span>
+                        ${item.name} ${item.count}
+                    </span>
+                `);
+                elTitle.find("img[name=action_set_scene]").click( (event) => {
+                    event.stopPropagation();
+                    viewer.setScene(sceneLion); 
+                });
+                elTitle.toString = () => "About Annotations";
+
+                let aAbout1 = new Potree.Annotation({
+                    position: [item.centroid.x, item.centroid.y, item.centroid.z],
+                    title: elTitle,
+                    cameraPosition: [item.centroid.x+5, item.centroid.y+5, item.centroid.z+5],
+                    cameraTarget:   [item.centroid.x, item.centroid.y, item.centroid.z],
+                });
+                sceneSG.annotations.add(aAbout1);
+            }
+        }
         // Function to load all point clouds
         async function loadPointClouds() {
             // Apply the classification scheme once all point clouds are loaded
@@ -291,14 +155,22 @@
                     const result = await Potree.loadPointCloud(pointCloudUrl);
                     let pointcloud = result.pointcloud;
                     let material = pointcloud.material;
-
+                    console.log('result',result)
+                    console.log('pointcloud',pointcloud.boundingBox.min.x)
+                    console.log('pointcloud',pointcloud.boundingBox.min.y)
+                    console.log('pointcloud',pointcloud.boundingBox.min.z)
+                    console.log('pointcloud',pointcloud.boundingBox)
                     // Configure material properties
                     material.minSize = 2;
                     material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
                     // material.pointColorType = Potree.PointColorType.CLASSIFICATION;
 
                     // Add point cloud to scene
-                    viewer.scene.addPointCloud(pointcloud);
+                    // viewer.scene.addPointCloud(pointcloud);
+                    
+                    sceneSG.addPointCloud(pointcloud);
+
+
 
                     loadedClouds++;
                     console.log(`Loaded ${loadedClouds}/${totalClouds} point clouds`);
@@ -308,18 +180,133 @@
                         viewer.fitToScreen();
 
                         // Automatically show the areas after point clouds are loaded
-                        setTimeout(() => {
-                            createAreaMeasurements();
-                        }, 1000);
+                        // setTimeout(() => {
+                        //     createAreaMeasurements();
+                        // }, 1000);
                     }
                 } catch (error) {
                     console.error(`Error loading point cloud ${pointCloudUrl}:`, error);
                 }
             }
+
+            await addAnnotations(areaPolygons.objects)
         }
 
         // Start loading point clouds
         loadPointClouds();
+
+        function renderLabelsSummary() {
+            const measurementControls = document.getElementById('measurement-controls');
+            
+            if (!measurementControls || !areaPolygons || !areaPolygons.labelsSummary) {
+                console.error('Missing required elements or data');
+                return;
+            }
+            
+            // Create container for summary
+            const summaryContainer = document.createElement('div');
+            summaryContainer.className = 'labels-summary-container';
+            summaryContainer.style.padding = '10px';
+            summaryContainer.style.backgroundColor = '#f5f5f5';
+            summaryContainer.style.borderRadius = '5px';
+            summaryContainer.style.marginTop = '10px';
+            
+            // Create header
+            const header = document.createElement('h3');
+            header.textContent = 'Labels Summary';
+            header.style.margin = '0 0 10px 0';
+            header.style.fontSize = '16px';
+            summaryContainer.appendChild(header);
+            
+            // Create table for labels
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.style.fontSize = '14px';
+            
+            // Create table header
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            
+            ['Color', 'Label', 'Count', '%'].forEach(text => {
+                const th = document.createElement('th');
+                th.textContent = text;
+                th.style.padding = '5px';
+                th.style.textAlign = 'left';
+                th.style.borderBottom = '1px solid #ddd';
+                headerRow.appendChild(th);
+            });
+            
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            
+            // Create table body
+            const tbody = document.createElement('tbody');
+            
+            // Calculate total count for percentage
+            const totalCount = areaPolygons.labelsSummary.reduce((sum, item) => sum + item.count, 0);
+            
+            // Add each label to the table
+            areaPolygons.labelsSummary.forEach(label => {
+                const row = document.createElement('tr');
+                
+                // Color cell
+                const colorCell = document.createElement('td');
+                colorCell.style.padding = '5px';
+                const colorSwatch = document.createElement('div');
+                colorSwatch.style.width = '15px';
+                colorSwatch.style.height = '15px';
+                colorSwatch.style.backgroundColor = `rgba(${label.color[0]*255}, ${label.color[1]*255}, ${label.color[2]*255}, ${label.color[3]})`;
+                colorSwatch.style.borderRadius = '3px';
+                colorCell.appendChild(colorSwatch);
+                row.appendChild(colorCell);
+                
+                // Label name cell
+                const nameCell = document.createElement('td');
+                nameCell.textContent = label.name;
+                nameCell.style.padding = '5px';
+                row.appendChild(nameCell);
+                
+                // Count cell
+                const countCell = document.createElement('td');
+                countCell.textContent = label.count;
+                countCell.style.padding = '5px';
+                row.appendChild(countCell);
+                
+                // Percentage cell
+                const percentCell = document.createElement('td');
+                const percent = ((label.count / totalCount) * 100).toFixed(1);
+                percentCell.textContent = `${percent}%`;
+                percentCell.style.padding = '5px';
+                row.appendChild(percentCell);
+                
+                tbody.appendChild(row);
+            });
+            
+            table.appendChild(tbody);
+            summaryContainer.appendChild(table);
+            
+            // Clear existing content and append the new summary
+            measurementControls.innerHTML = '';
+            measurementControls.appendChild(summaryContainer);
+            }
+
+            // Call this function when you want to update the summary
+            // Example: After loading the polygon or when data changes
+            // renderLabelsSummary();
+
+            // If you want this to run automatically when data is available:
+            const checkAndRender = () => {
+            if (areaPolygons && areaPolygons.labelsSummary) {
+                renderLabelsSummary();
+            } else {
+                setTimeout(checkAndRender, 500); // Check again in 500ms
+            }
+            };
+
+            // Start checking
+            checkAndRender();
+
     </script>
 </body>
 

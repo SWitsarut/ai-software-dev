@@ -11,6 +11,10 @@ import { cal_init_price } from './calculate_price';
 
 const router = express.Router()
 
+// if (false) {
+
+export const stripe = new Stripe(process.env.STRIPE_PRIVATE || "");
+const webHookSecret = process.env.WEBHOOK_SECRET || "";
 
 
 router.get('/buy', authenticateToken, async (req, res) => {
@@ -36,9 +40,6 @@ router.post('/buy', authenticateToken, async (req, res): Promise<any> => {
 })
 // if (false) {
 
-export const stripe = new Stripe(process.env.STRIPE_PRIVATE || "");
-const webHookSecret = process.env.WEBHOOK_SECRET || "";
-
 
 router.get('/get_public_stripe', (_, res) => {
   res.send(process.env.STRIPE_PUBLIC)
@@ -48,7 +49,7 @@ router.get('/get_public_stripe', (_, res) => {
 
 router.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req, res): Promise<any> => {
   const sig = req.headers["stripe-signature"];
-
+  console.log('webhook called')
   if (!sig) {
     return res.status(400).send("Missing Stripe Signature");
   }
@@ -88,4 +89,5 @@ router.post("/webhook", bodyParser.raw({ type: "application/json" }), async (req
 );
 
 // }
+
 export default router

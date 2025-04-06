@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>Potree Viewer</title>
+
+	<link rel="stylesheet" type="text/css" href="<%= libpath %>/build/potree/potree.css">
+	<link rel="stylesheet" type="text/css" href="<%= libpath %>/libs/jquery-ui/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="<%= libpath %>/libs/openlayers3/ol.css">
+	<link rel="stylesheet" type="text/css" href="<%= libpath %>/libs/spectrum/spectrum.css">
+	<link rel="stylesheet" type="text/css" href="<%= libpath %>/libs/jstree/themes/mixed/style.css">
+	<link rel="stylesheet" type="text/css" href="<%= libpath %>/libs/Cesium/Widgets/CesiumWidget/CesiumWidget.css">
+</head>
+
+<body>
+	<script src="<%= libpath %>/libs/jquery/jquery-3.1.1.min.js"></script>
+	<script src="<%= libpath %>/libs/spectrum/spectrum.js"></script>
+	<script src="<%= libpath %>/libs/jquery-ui/jquery-ui.min.js"></script>
+	<script src="<%= libpath %>/libs/other/BinaryHeap.js"></script>
+	<script src="<%= libpath %>/libs/tween/tween.min.js"></script>
+	<script src="<%= libpath %>/libs/d3/d3.js"></script>
+	<script src="<%= libpath %>/libs/proj4/proj4.js"></script>
+	<script src="<%= libpath %>/libs/openlayers3/ol.js"></script>
+	<script src="<%= libpath %>/libs/i18next/i18next.js"></script>
+	<script src="<%= libpath %>/libs/jstree/jstree.js"></script>
+	<script src="<%= libpath %>/build/potree/potree.js"></script>
+	<script src="<%= libpath %>/libs/plasio/js/laslaz.js"></script>
+	<script src="<%= libpath %>/libs/Cesium/Cesium.js"></script>
+	
+	<!-- INCLUDE ADDITIONAL DEPENDENCIES HERE -->
+	<!-- INCLUDE SETTINGS HERE -->
+	
+	<div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px; ">
+		
+		<div id="potree_render_area" >
+			<div id="cesiumContainer" style="position: absolute; width: 100%; height: 100%; background-color:green"></div>
+		</div>
+		<div id="potree_sidebar_container"> </div>
+	</div>
+
+
+<script type="module">
+
+	import * as THREE from "<%= libpath %>/libs/three.js/build/three.module.js";
+
+	window.cesiumViewer = new Cesium.Viewer('cesiumContainer', {
+		useDefaultRenderLoop: false,
+		animation: false,
+		baseLayerPicker : false,
+		fullscreenButton: false, 
+		geocoder: false,
+		homeButton: false,
+		infoBox: false,
+		sceneModePicker: false,
+		selectionIndicator: false,
+		timeline: false,
+		navigationHelpButton: false,
+		imageryProvider : Cesium.createOpenStreetMapImageryProvider({url : 'https://a.tile.openstreetmap.org/'}),
+		terrainShadows: Cesium.ShadowMode.DISABLED,
+	});
+
+	let cp = new Cesium.Cartesian3(4303414.154026048, 552161.235598733, 4660771.704035539);
+	cesiumViewer.camera.setView({
+		destination : cp,
+		orientation: {
+			heading : 10, 
+			pitch : -Cesium.Math.PI_OVER_TWO * 0.5, 
+			roll : 0.0 
+		}
+	});
+
+
+	window.potreeViewer = new Potree.Viewer(document.getElementById("potree_render_area"), {
+		useDefaultRenderLoop: false
+	});
+	potreeViewer.setEDLEnabled(true);
+	potreeViewer.setFOV(60);
+	potreeViewer.setPointBudget(1_000_000);
+	potreeViewer.setMinNodeSize(0);
+	potreeViewer.loadSettingsFromURL();
+	potreeViewer.setBackground(null);
+
+	potreeViewer.loadGUI(() => {
+		potreeViewer.setLanguage('en');
+		$("#menu_appearance").next().show();
+		$("#menu_tools").next().show();
+		$("#menu_scene").next().show();
+		potreeViewer.toggleSidebar();
+	});
+	
+	// Potree.loadPointCloud("http://5.9.65.151/mschuetz/potree/resources/pointclouds/opentopography/CA13_1.4/cloud.js", "CA13", function(e){
+
+	// 	let pointcloud = e.pointcloud;
+	// 	let scene = potreeViewer.scene;
+	// 	let material = pointcloud.material;
+
+	// 	scene.addPointCloud(pointcloud);
+
+	// 	material.size = 1;
+	// 	material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+		
+	// 	potreeViewer.scene.view.setView(
+	// 		[689429.64, 3877023.77, 42878.97],
+	// 		[696072.86, 3916730.04, 82.04],
+	// 	);
+
+	// 	let pointcloudProjection = e.pointcloud.projection;
+	// 	let mapProjection = proj4.defs("WGS84");
+
+	// 	window.toMap = proj4(pointcloudProjection, mapProjection);
+	// 	window.toScene = proj4(mapProjection, pointcloudProjection);
+		
+	// });
+    const interestScheme = <%- JSON.stringify(interest_scheme) %>;
+    console.log("Classification scheme:", interestScheme);
+    const potreeDirs = <%- JSON.stringify(potreeDirs) %>;
+
+    async function loadPointClouds() {
+            // Apply the classification scheme once all point clouds are loaded
+            potreeViewer.setClassifications(interestScheme);
+            console.log(potreeDirs)
+            // Load each point cloud
+            for (const dir of potreeDirs) {
+                const pointCloudUrl = `${dir}`;
+                console.log(`Loading point cloud: ${pointCloudUrl}`);
+
+                try {
+                    const result = await Potree.loadPointCloud(pointCloudUrl);
+                    let pointcloud = result.pointcloud;
+                    let material = pointcloud.material;
+                    console.log('result',result)
+                    console.log('pointcloud',pointcloud.boundingBox.min.x)
+                    console.log('pointcloud',pointcloud.boundingBox.min.y)
+                    console.log('pointcloud',pointcloud.boundingBox.min.z)
+                    console.log('pointcloud',pointcloud.boundingBox)
+
+                    material.minSize = 2;
+                    material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+
+                    potreeViewer.scene.addPointCloud(pointcloud);
+
+                    // potreeViewer.scene.view.setView(
+                    //     [689429.64, 3877023.77, 42878.97],
+                    //     [696072.86, 3916730.04, 82.04],
+                    // );
+                    // let pointcloudProjection = pointcloud.projection;
+                    // let pointcloudProjection = "+proj=tmerc +lat_0=0 +lon_0=-79.5 +k=0.9999 +x_0=304800 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs";
+                    // let pointcloudProjection = "EPSG:4536";
+                    // let mapProjection = proj4.defs("WGS84");
+
+                    // window.toMap = proj4(pointcloudProjection, mapProjection);
+                    // window.toScene = proj4(mapProjection, pointcloudProjection);
+
+
+                    proj4.defs("EPSG:26917", "+proj=utm +zone=17 +datum=NAD83 +units=m +no_defs");
+                    proj4.defs("WGS84", "+proj=longlat +datum=WGS84 +no_defs");
+
+                    const pointcloudProjection = "EPSG:26917";
+                    const mapProjection = "WGS84";
+
+                    window.toMap = proj4(pointcloudProjection, mapProjection);   // Scene → WGS84
+                    window.toScene = proj4(mapProjection, pointcloudProjection); // WGS84 → Scene
+
+
+                    potreeViewer.fitToScreen();
+
+                } catch (error) {
+                    console.error(`Error loading point cloud ${pointCloudUrl}:`, error);
+                }
+            }
+                
+    }
+    loadPointClouds()
+	function loop(timestamp){
+		requestAnimationFrame(loop);
+
+		potreeViewer.update(potreeViewer.clock.getDelta(), timestamp);
+
+		potreeViewer.render();
+
+		if(window.toMap !== undefined){
+
+			{
+				let camera = potreeViewer.scene.getActiveCamera();
+
+				let pPos = new THREE.Vector3(0, 0, 0).applyMatrix4(camera.matrixWorld);
+				let pRight = new THREE.Vector3(600, 0, 0).applyMatrix4(camera.matrixWorld);
+				let pUp = new THREE.Vector3(0, 600, 0).applyMatrix4(camera.matrixWorld);
+				let pTarget = potreeViewer.scene.view.getPivot();
+
+				let toCes = (pos) => {
+					let xy = [pos.x, pos.y];
+					let height = pos.z -135;
+					let deg = toMap.forward(xy);
+					let cPos = Cesium.Cartesian3.fromDegrees(...deg, height);
+
+					return cPos;
+				};
+
+				let cPos = toCes(pPos);
+				let cUpTarget = toCes(pUp);
+				let cTarget = toCes(pTarget);
+
+				let cDir = Cesium.Cartesian3.subtract(cTarget, cPos, new Cesium.Cartesian3());
+				let cUp = Cesium.Cartesian3.subtract(cUpTarget, cPos, new Cesium.Cartesian3());
+
+				cDir = Cesium.Cartesian3.normalize(cDir, new Cesium.Cartesian3());
+				cUp = Cesium.Cartesian3.normalize(cUp, new Cesium.Cartesian3());
+
+				cesiumViewer.camera.setView({
+					destination : cPos,
+					orientation : {
+						direction : cDir,
+						up : cUp
+					}
+				});
+
+				let aspect = potreeViewer.scene.getActiveCamera().aspect;
+				if(aspect < 1){
+					let fovy = Math.PI * (potreeViewer.scene.getActiveCamera().fov / 180);
+					cesiumViewer.camera.frustum.fov = fovy;
+				}else{
+					let fovy = Math.PI * (potreeViewer.scene.getActiveCamera().fov / 180);
+					let fovx = Math.atan(Math.tan(0.5 * fovy) * aspect) * 2
+					cesiumViewer.camera.frustum.fov = fovx;
+				}
+
+			}
+
+			cesiumViewer.render();
+		}
+	}
+
+	requestAnimationFrame(loop);
+
+
+  </script>
+</body>
+</html>

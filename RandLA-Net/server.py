@@ -45,7 +45,6 @@ def handle_predict():
     return jsonify({'status':200})
 
 
-
 @app.route('/potree', methods=['POST'])
 def potree():
     data = request.get_json()

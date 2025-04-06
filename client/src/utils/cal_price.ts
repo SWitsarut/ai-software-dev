@@ -1,5 +1,5 @@
 
-const classPricing: { [key: number]: number } = {
+export const classPricing: { [key: number]: number } = {
     0: 0,
     12: 10,
     13: 40,

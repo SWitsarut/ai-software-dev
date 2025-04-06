@@ -52,6 +52,67 @@ const storage = multer.diskStorage({
 const upload = multer({ storage })
 
 
+/**
+ * @swagger
+ * /request:
+ *   post:
+ *     summary: Upload unprocessed data and create a project request
+ *     tags: [Request]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - teamId
+ *               - dataName
+ *               - files
+ *               - selectedLabels
+ *             properties:
+ *               teamId:
+ *                 type: string
+ *                 description: ID of the team making the request
+ *                 example: "60f7c812c2e599001c8c57b3"
+ *               dataName:
+ *                 type: string
+ *                 description: A name for the uploaded dataset
+ *                 example: "urban_buildings_set_01"
+ *               selectedLabels:
+ *                 type: string
+ *                 description: JSON stringified array of selected label names
+ *                 example: "[\"building\", \"tree\"]"
+ *               files:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Point cloud data files to upload
+ *     responses:
+ *       200:
+ *         description: Project request successfully created with pricing
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: string
+ *                   example: "assigned price"
+ *                 project:
+ *                   type: object
+ *                   description: The created project with assigned price
+ *       400:
+ *         description: Missing required fields (e.g., files, teamId, or dataName)
+ *       401:
+ *         description: Unauthorized - user not found or invalid token
+ *       403:
+ *         description: Forbidden - user is not a team admin
+ *       500:
+ *         description: Server error or price calculation failed
+ */
 
 router.post('/request', authenticateToken, upload.array('files'), async (req, res): Promise<any> => {
     const { teamId, dataName } = req.body;
@@ -82,6 +143,7 @@ router.post('/request', authenticateToken, upload.array('files'), async (req, re
     if (!updatedData) return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Unable to update UnprocessedData" })
     const request = await Request.create({ teamId, dataId: updatedData._id })
 
+    res.status(StatusCodes.OK).json({data: "data uploaded"})
 
     const selectedLabels = JSON.parse(req.body.selectedLabels);
     const createdProject = await Project.create({
@@ -90,6 +152,8 @@ router.post('/request', authenticateToken, upload.array('files'), async (req, re
         targets: selectedLabels,
         name: dataName
     });
+
+
 
     const label_price = cal_init_price(selectedLabels)
 
@@ -108,9 +172,9 @@ router.post('/request', authenticateToken, upload.array('files'), async (req, re
         amount: Number(price?.data.price ?? 50) + label_price
     }, { new: true })
 
-    res.status(StatusCodes.OK).json({
-        data: "assigned price", project: updatedProject
-    })
+    // res.status(StatusCodes.OK).json({
+    //     data: "assigned price", project: updatedProject
+    // })
 })
 
 

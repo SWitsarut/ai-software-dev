@@ -23,7 +23,7 @@ const ObjectsSchema = new mongoose.Schema(
             type: Number,
             require: true,
         },
-        centriod: {
+        centroid: {
             type: PointSchema,
             require: true,
         },

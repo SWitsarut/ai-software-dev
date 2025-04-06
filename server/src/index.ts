@@ -4,9 +4,8 @@ import cors from "cors";
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken'
-import { visible_label } from './aviable_label';
+import { labels, processObjectsData, visible_label } from './aviable_label';
 import auth_router, { secret } from './auth'
-// import upload_data from './point_cloud/upload_data'
 import payments from './payments/payments'
 import users from "./userdata/get_user"
 import teams from "./Project/team"
@@ -19,6 +18,9 @@ import authenticateToken from './middleware/authenticateToken';
 import { StatusCodes } from 'http-status-codes';
 import objects_end_point from "./Project/objects"
 import fs from 'fs'
+import { UnprocessedData } from './model/unprocessedData';
+import swaggerjsdoc from "swagger-jsdoc"
+import swaggerUI from 'swagger-ui-express'
 
 const app = express();
 
@@ -36,7 +38,6 @@ app.use((req, res, next) => {
 
 
 
-
 const PORT: number = 8080;
 
 
@@ -45,14 +46,15 @@ app.set('view engine', 'ejs');
 app.use("/public", express.static("public"));
 
 
-//router
 app.use('/user', users)
 app.use('/auth', auth_router)
 app.use('/', payments)
-// app.use('/upload', upload_data)
 app.use('/point_cloud', request_end_point)
 app.use('/objects', objects_end_point)
 app.use('/teams', teams)
+
+
+
 app.use('/projects', projects_end_point)
 
 
@@ -65,28 +67,34 @@ async function getPotreeSubdirectories(baseDir: string): Promise<string[]> {
     return []
   }
 }
-// try {
-//   // Read all subdirectories
-//   const dirs = await fs.promises.readdir(baseDir, { withFileTypes: true });
-//   console.log('dirs', dirs)
-//   // Filter for directories and return their paths
-//   const potreeDirs = dirs
-//     .filter(dirent => dirent.isDirectory())
-//     .map(dirent => `${baseDir}/${dirent.name}`);
 
-//   return potreeDirs;
-// } catch (error) {
-//   console.error('Error reading potree directories:', error);
-//   return []; // Return empty array if there's an error
-// }
-// }
+app.post('/preview', async (req, res): Promise<any> => {
+  const dataId = req.body.dataId
+  const data = await UnprocessedData.findOne({ _id: dataId })
+  console.log('data', data, 'dataId', dataId)
+  if (!data) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Data not found!" });
 
+
+  const libpath = `http://localhost:${PORT}/public`;
+  const url_base = libpath + `/point_cloud/${data._id}/potree/`
+
+  const dirs = await getPotreeSubdirectories(`/app/public/point_cloud/${data._id}/potree`)
+  const datas = dirs.map((dir, index) => {
+    return url_base + dir + `/metadata.json`
+  })
+
+  const res_data = {
+    dataName: data.name,
+    potreeDirs: datas,
+    libpath: libpath,
+  };
+
+  return res.render('preview', res_data);
+})
 
 app.post('/view', async (req, res): Promise<any> => {
   const projectId = req.body.projectId;
-  const teamId = req.body.teamId;
   const token = req.body.token;
-  // console.log(token);
 
   if (!token) return res.status(StatusCodes.FORBIDDEN).json({ "error": "You don't have access" });
 
@@ -127,32 +135,44 @@ app.post('/view', async (req, res): Promise<any> => {
     // console.log('datas', datas)
     // console.log('dirsdirs', dirs)
 
-    const areasData = await Objects.find({ dataId: project.dataId._id })
+    const areasData = await Objects.find({
+      dataId: project.dataId._id,
+      objectId: { $in: project.targets }  // Filter to only those in target array
+    }).select('centroid objectId')
     // console.log('areasData', areasData)
+
+    const processedObject = processObjectsData(areasData, labels)
+
+
     const data = {
       dataName: project.name,
       potreeDirs: datas,
       libpath: libpath,
       interest_scheme: visible_label(project.targets),
-      areasData: areasData
+      areasData: processedObject
     };
 
     return res.render('view3D', data);
 
 
-    // res.json({
-    //   project,
-    //   teamId,
-    //   user: req.user
-    // });
   } catch (error) {
     return res.status(StatusCodes.UNAUTHORIZED).json({ error: "Invalid token" });
   }
 });
 
-app.post('/', (req, res) => {
+app.post('/', async(req, res) => {
   const dataValue = req.body.data
   let selectedLabelsArray = [];
+
+  console.log(dataValue)
+  
+  const libpath = `http://localhost:${PORT}/public`;
+  const url_base = [libpath + `/point_cloud/${dataValue}/metadata.json`]
+
+  // const dirs = await getPotreeSubdirectories(`/${dataValue}/metadata.json`)
+  // // const datas = dirs.map((dir, index) => {
+  // //   return url_base + `/metadata.json`
+  // // })
 
   try {
     if (req.body.selectedLabels) {
@@ -165,19 +185,46 @@ app.post('/', (req, res) => {
   } catch (err) {
     console.error("Error parsing selectedLabels:", err);
   }
+
   const data = {
-    data: dataValue,
+    dataName: dataValue,
     libpath: `http://localhost:${PORT}/public`,
-    interest_scheme: visible_label(selectedLabelsArray)
+    interest_scheme: visible_label(selectedLabelsArray),
+    potreeDirs:url_base,
   }
-  // if (req.body.data.split('/').length == 1) {
-  res.render('index', data);
-  // } else {
-  // res.render('special', data);
-  // }
+  console.log('data',data)
+
+  res.render('viewCesium', data);
 }
 );
 
+
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Get overall statistics of the system
+ *     description: Returns the total count of objects, users, and projects in the database.
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved system statistics.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 objects:
+ *                   type: integer
+ *                   example: 120
+ *                 users:
+ *                   type: integer
+ *                   example: 42
+ *                 project:
+ *                   type: integer
+ *                   example: 15
+ *       500:
+ *         description: Server error while fetching statistics.
+ */
 app.get('/', async (_, res): Promise<any> => {
   const objects = await Objects.countDocuments({})
   const users = await User.countDocuments({})
@@ -186,10 +233,43 @@ app.get('/', async (_, res): Promise<any> => {
 })
 
 
+
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Point Cloud API',
+      version: '1.0.0',
+      description: 'API documentation for your point cloud data application',
+    },
+    servers: [
+      {
+        url: `http://localhost:${PORT}`,
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        }
+      }
+    },
+  },
+  apis: ['./**/*.ts'], // Adjust this path to where your route files are defined
+};
+
+const swaggerSpec = swaggerjsdoc(swaggerOptions);
+
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
+
 app.listen(PORT, async () => {
   console.log(`🗄️ Server Fire on http:localhost:${PORT}`);
   // Connect To The Database
   const uri = 'mongodb://root:example123@mongo:27017/'
+  // const uri = 'mongodb://root:example123@localhost:27017/'
 
   try {
     await mongoose.connect(uri, {});
@@ -200,28 +280,3 @@ app.listen(PORT, async () => {
   }
 });
 
-// app.listen(PORT, async () => {
-//   console.log(`🗄️ Server Fire on http://localhost:${PORT}`);
-
-//   const uri = 'mongodb://root:example123@mongo:27017/';
-
-//   try {
-//     await mongoose.connect(uri, {});
-//     console.log("🛢️ Connected To Database");
-
-//     // Drop the unique index on teamId only if it exists
-//     const db = mongoose.connection.db;
-//     const collection = db?.collection('projects');
-
-//     const indexes = await collection?.indexes();
-//     if (indexes?.some(index => index.name === "teamId_1")) {
-//       await collection?.dropIndex("teamId_1");
-//       console.log("✅ Dropped unique index on teamId");
-//     } else {
-//       console.log("ℹ️ No unique index on teamId found");
-//     }
-
-//   } catch (error) {
-//     console.log("⚠️ Error connecting to Database", error);
-//   }
-// });

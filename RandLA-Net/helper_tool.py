@@ -51,7 +51,8 @@ class ConfigS3DIS:
     batch_size = 6  # batch_size during training
     val_batch_size = 20  # batch_size during validation and test
     train_steps = 500  # Number of steps per epochs
-    val_steps = 100  # Number of validation steps per epoch
+    val_steps = 20
+  # Number of validation steps per epoch
 
     sub_sampling_ratio = [4, 4, 4, 4, 2]  # sampling ratio of random sampling at each layer
     d_out = [16, 64, 128, 256, 512]  # feature dimension

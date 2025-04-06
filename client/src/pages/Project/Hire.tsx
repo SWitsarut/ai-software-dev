@@ -8,6 +8,7 @@ import { CloudUpload } from "@mui/icons-material"
 import axios from '../../utils/axios';
 import { labels } from '../../utils/avaiable_label';
 import NearMeIcon from '@mui/icons-material/NearMe';
+import HiringPriceInfo from '../../components/HiringPriceInfo';
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -31,9 +32,9 @@ function Buy() {
     const [files, setFiles] = useState<FileList | null>(null);
     const [totalSize, setTotalSize] = useState<number>(0);
     const [selectedLabels, setSelectedLabels] = useState<number[]>([23, 24, 12, 17]); // Default from server code
-    const [teamId,setTeamId] =useState<string>("")
+    const [teamId, setTeamId] = useState<string>("")
 
-    const MAX_SIZE_LIMIT = 2 * 1024 * 1024 * 1024; // 2GB in bytes
+    const MAX_SIZE_LIMIT = 40 * 1024 * 1024 * 1024; // 2GB in bytes
 
 
     useEffect(() => {
@@ -177,14 +178,16 @@ function Buy() {
         formData.append('dataName', dataName)
         formData.append('teamId', id || "")
         try {
-            axios.post(`/point_cloud/request`, formData, {
+            await axios.post(`/point_cloud/request`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
-            });
+            }).then(e => {
+                console.log(e)
+                navigate(`/teams/id/${teamId}`)
+            })
 
             setError('');
-            navigate(`/teams/id/${teamId}`)
         } catch (error) {
             setError('File upload failed');
             console.error(error);
@@ -198,6 +201,7 @@ function Buy() {
 
     return (
         <Page header={'Hiring'}>
+
             <Grid container spacing={3}>
 
                 <Grid item xs={12} md={4}>
@@ -323,20 +327,27 @@ function Buy() {
                     </Paper>
 
                 </Grid>
-                <Grid item sm={12}>
-                    <Paper elevation={3} sx={{
-                        p: 2,
-                        width: "100%",
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
 
-                    }}>
-                        <Typography variant='body1' color='error'>{error}</Typography>
-                        <Button startIcon={<NearMeIcon />} variant='contained' onClick={handleUpload}>ส่ง</Button>
-                    </Paper>
+                <Grid item sm={12}>
+                    <Stack direction='row' gap={3} >
+                        <HiringPriceInfo selectedLabels={selectedLabels} />
+                        <Paper elevation={3} sx={{
+                            height: 'fit-content',
+                            p: 2,
+                            width: "100%",
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                        }}>
+                            <Typography variant='body1' color='error'>{error}</Typography>
+                            <Button startIcon={<NearMeIcon />} variant='contained' onClick={handleUpload}>ส่ง</Button>
+                        </Paper>
+                    </Stack>
                 </Grid>
+                {/* <Grid item >
+
+                </Grid> */}
             </Grid>
         </Page>
     )

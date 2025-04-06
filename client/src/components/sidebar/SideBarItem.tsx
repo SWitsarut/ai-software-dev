@@ -1,85 +1,105 @@
 import React from "react";
-import { 
-  ListItemButton, 
-  ListItemIcon, 
-  ListItemText, 
-  Tooltip, 
-  useTheme 
+import {
+    ListItem,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    Tooltip,
+    useTheme
 } from "@mui/material";
-import { ReactElement } from "react";
 import { NavigateFunction } from "react-router-dom";
 
 interface SideBarItemProps {
-  name: string;
-  icon?: ReactElement;
-  navigate: NavigateFunction;
-  path: string;
-  isActive: boolean;
-  open: boolean;
+    name: string;
+    path: string;
+    icon?: React.ReactNode;
+    isActive: boolean;
+    open: boolean;
+    navigate: NavigateFunction | ((path: string) => void);
 }
 
-const SideBarItem: React.FC<SideBarItemProps> = ({ 
-  name, 
-  icon, 
-  navigate, 
-  path, 
-  isActive,
-  open 
+const SideBarItem: React.FC<SideBarItemProps> = ({
+    name,
+    path,
+    icon,
+    isActive,
+    open,
+    navigate
 }) => {
-  const theme = useTheme();
-  
-  const handleNavigation = (): void => {
-    navigate(path);
-  };
-  
-  const item = (
-    <ListItemButton
-      onClick={handleNavigation}
-      selected={isActive}
-      sx={{
-        minHeight: 48,
-        px: open ? 2.5 : 2,
-        justifyContent: open ? 'initial' : 'center',
-        '&.Mui-selected': {
-          backgroundColor: theme.palette.primary.main + '20', // Semi-transparent primary color
-          borderRight: `3px solid ${theme.palette.primary.main}`,
-          '&:hover': {
-            backgroundColor: theme.palette.primary.main + '30', // Slightly darker on hover
-          }
-        },
-        mb: 0.5,
-        // borderRadius: open ? `0 24px 24px 0` : 0, // Rounded corner when open
-        mx: open ? 1 : 0,
-      }}
-    >
-      <ListItemIcon
-        sx={{
-          minWidth: 0,
-          mr: open ? 2 : 'auto',
-          justifyContent: 'center',
-          color: isActive ? theme.palette.primary.main : 'inherit'
-        }}
-      >
-        {icon}
-      </ListItemIcon>
-      <ListItemText 
-        primary={name} 
-        sx={{ 
-          opacity: open ? 1 : 0,
-          color: isActive ? theme.palette.primary.main : 'inherit',
-          '& .MuiTypography-root': {
-            fontWeight: isActive ? 'bold' : 'normal',
-          }
-        }} 
-      />
-    </ListItemButton>
-  );
+    const theme = useTheme();
+    
+    const itemContent = (
+        <ListItemButton
+            onClick={() => navigate(path)}
+            sx={{
+                minHeight: 48,
+                borderRadius: 1.5,
+                mb: 0.5,
+                justifyContent: open ? 'initial' : 'center',
+                px: 2.5,
+                bgcolor: isActive 
+                    ? theme.palette.mode === 'dark' 
+                        ? 'rgba(144, 202, 249, 0.16)' 
+                        : 'rgba(33, 150, 243, 0.08)' 
+                    : 'transparent',
+                '&:hover': {
+                    bgcolor: isActive 
+                        ? theme.palette.mode === 'dark' 
+                            ? 'rgba(144, 202, 249, 0.24)' 
+                            : 'rgba(33, 150, 243, 0.16)'
+                        : theme.palette.mode === 'dark' 
+                            ? 'rgba(255, 255, 255, 0.08)' 
+                            : 'rgba(0, 0, 0, 0.04)',
+                },
+                transition: 'background-color 0.2s ease-in-out'
+            }}
+        >
+            {icon && (
+                <ListItemIcon
+                    sx={{
+                        minWidth: 0,
+                        mr: open ? 2 : 'auto',
+                        justifyContent: 'center',
+                        color: isActive 
+                            ? 'primary.main' 
+                            : 'text.secondary'
+                    }}
+                >
+                    {icon}
+                </ListItemIcon>
+            )}
+            {open && (
+                <ListItemText 
+                    primary={name} 
+                    sx={{ 
+                        opacity: open ? 1 : 0,
+                        '& .MuiTypography-root': {
+                            fontWeight: isActive ? 600 : 400,
+                            color: isActive ? 'primary.main' : 'text.primary',
+                        }
+                    }} 
+                />
+            )}
+        </ListItemButton>
+    );
 
-  return open ? item : (
-    <Tooltip title={name} placement="right">
-      {item}
-    </Tooltip>
-  );
+    return (
+        <ListItem
+            disablePadding
+            sx={{
+                display: 'block',
+                px: open ? 1 : 0.5,
+            }}
+        >
+            {open ? (
+                itemContent
+            ) : (
+                <Tooltip title={name} placement="right">
+                    {itemContent}
+                </Tooltip>
+            )}
+        </ListItem>
+    );
 };
 
 export default SideBarItem;

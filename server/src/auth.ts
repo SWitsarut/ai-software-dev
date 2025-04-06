@@ -24,8 +24,24 @@ declare global {
     }
 }
 
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get currently authenticated user info
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user data
+ *       401:
+ *         description: Unauthorized or missing token
+ *       404:
+ *         description: User not found
+ */
 
-// Route to get current user info
 router.get('/me', authenticateToken, async (req, res): Promise<any> => {
     try {
         // req.user should be set by the authenticateToken middleware
@@ -53,7 +69,49 @@ router.get('/me', authenticateToken, async (req, res): Promise<any> => {
         res.status(500).json({ message: "Server error" });
     }
 });
-
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - name
+ *               - phoneNumber
+ *               - email
+ *               - password
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: "john123"
+ *               name:
+ *                 type: string
+ *                 example: "John Doe"
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "+123456789"
+ *               email:
+ *                 type: string
+ *                 example: "john@example.com"
+ *               password:
+ *                 type: string
+ *                 example: "password123"
+ *     responses:
+ *       201:
+ *         description: User successfully registered
+ *       400:
+ *         description: Validation errors or userId already taken
+ *       500:
+ *         description: Server error
+ */
 
 router.post("/register", async (req, res): Promise<any> => {
     const { userId, name, phoneNumber, email, password } = req.body;
@@ -112,6 +170,35 @@ router.post("/register", async (req, res): Promise<any> => {
     }
 });
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Login with userId and password
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - password
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: "john123"
+ *               password:
+ *                 type: string
+ *                 example: "password123"
+ *     responses:
+ *       200:
+ *         description: Successful login with access token
+ *       401:
+ *         description: Invalid credentials
+ */
 router.post('/login', async (req, res): Promise<any> => {
     const { userId, password } = req.body;
     // console.log('req.body', req.body)
@@ -146,6 +233,35 @@ router.post('/login', async (req, res): Promise<any> => {
     });
 });
 
+/**
+ * @swagger
+ * /auth/update:
+ *   post:
+ *     summary: Update current user's profile (name or avatar)
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Successfully updated user profile
+ *       400:
+ *         description: No image or name provided
+ *       500:
+ *         description: Server error
+ */
 router.post('/update', authenticateToken, uploadImage.single('image'), async (req, res): Promise<any> => {
     // console.log('here')
     const { name } = req.body;

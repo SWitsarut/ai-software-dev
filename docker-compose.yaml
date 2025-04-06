@@ -1,6 +1,7 @@
 services:
   client:
     container_name: vite-client
+    restart: always
     build:
       context: "./client"
       dockerfile: Dockerfile
@@ -15,6 +16,7 @@ services:
       sh -c "npm install && npm run dev"
   server:
     container_name: express-server
+    restart: always
     build:
       context: "./server"
       dockerfile: Dockerfile
@@ -38,6 +40,7 @@ services:
       - "./RandLA-Net:/app"
       - "./server/uploaded:/app/uploaded"
       - "./server/public/point_cloud:/app/public"
+
   mongo:
     image: mongo
     container_name: mongo
@@ -55,13 +58,13 @@ services:
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_PASSWORD}
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      # ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_PASSWORD}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/
       ME_CONFIG_MONGODB_URL: 'mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/'
       ME_CONFIG_BASICAUTH: false
   stripe-cli:
     image: stripe/stripe-cli
+    restart: always
     container_name: stripe-cli
-    command: "listen --api-key ${STRIPE_PRIVATE} --device-name Docker-stripe-cli --forward-to server:${API_PORT}/webhook/"
+    command: "listen --api-key ${STRIPE_PRIVATE} --device-name Docker-stripe-cli --forward-to server:${API_PORT}/webhook/ "
 
 volumes:
   db:

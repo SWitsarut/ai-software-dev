@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="Potree Viewer">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Potree Viewer</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" type="text/css" href="<%= libpath %>/build/potree/potree.css">
+    <link rel="stylesheet" type="text/css" href="<%= libpath %>/libs/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="<%= libpath %>/libs/openlayers3/ol.css">
+    <link rel="stylesheet" type="text/css" href="<%= libpath %>/libs/spectrum/spectrum.css">
+    <link rel="stylesheet" type="text/css" href="<%= libpath %>/libs/jstree/themes/mixed/style.css">
+
+    <style>
+        #measurement-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+
+        button {
+            padding: 8px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- JavaScript Libraries -->
+    <script src="<%= libpath %>/libs/jquery/jquery-3.1.1.min.js"></script>
+    <script src="<%= libpath %>/libs/spectrum/spectrum.js"></script>
+    <script src="<%= libpath %>/libs/jquery-ui/jquery-ui.min.js"></script>
+    <script src="<%= libpath %>/libs/other/BinaryHeap.js"></script>
+    <script src="<%= libpath %>/libs/tween/tween.min.js"></script>
+    <script src="<%= libpath %>/libs/d3/d3.js"></script>
+    <script src="<%= libpath %>/libs/proj4/proj4.js"></script>
+    <script src="<%= libpath %>/libs/openlayers3/ol.js"></script>
+    <script src="<%= libpath %>/libs/i18next/i18next.js"></script>
+    <script src="<%= libpath %>/libs/jstree/jstree.js"></script>
+    <script src="<%= libpath %>/build/potree/potree.js"></script>
+    <script src="<%= libpath %>/libs/plasio/js/laslaz.js"></script>
+
+    <!-- Main Container -->
+    <div class="potree_container" style="position: absolute; width: 100%; height: 100%; left: 0px; top: 0px;">
+        <div id="potree_render_area" style="background-image: url('');">
+        </div>
+        <div id="potree_sidebar_container">
+        </div>
+    </div>
+
+
+    <!-- Main Application Script -->
+    <script type="module">
+        // Import Three.js module
+        import * as THREE from "<%= libpath %>/libs/three.js/build/three.module.js";
+
+        // Initialize viewer
+        window.viewer = new Potree.Viewer(document.getElementById("potree_render_area"));
+
+        // Point cloud directories
+        const potreeDirs = <%- JSON.stringify(potreeDirs) %>;
+        console.log("Point cloud directories:", potreeDirs);
+        console.log("Point cloud directories received:", <% - JSON.stringify(potreeDirs) %>);
+
+        // Create description with link to metadata
+        const description = `Classification <strong><%- dataName %></strong>`;
+        console.log(description);
+        viewer.setDescription(description);
+
+        // Configure viewer settings
+        viewer.setEDLEnabled(true);
+        viewer.setFOV(60);
+        viewer.setPointBudget(2_000_000);
+
+        // Load GUI and initialize filters
+        viewer.loadGUI(() => {
+            $("#menu_filters").next().show();
+            viewer.toggleSidebar();
+        });
+
+        // Get interest scheme from server
+        const interestScheme = <%- JSON.stringify(interest_scheme) %>;
+        console.log("Classification scheme:", interestScheme);
+
+        // Initialize a counter to track loaded point clouds
+        let loadedClouds = 0;
+        const totalClouds = potreeDirs.length;
+
+
+        let sceneSG = new Potree.Scene();
+        viewer.setScene(sceneSG)
+
+        const areaPolygons = <%- JSON.stringify(areasData) %>;
+        console.log("Area polygons:", areaPolygons);
+
+        // Function to load all point clouds
+        async function loadPointClouds() {
+            // Apply the classification scheme once all point clouds are loaded
+            viewer.setClassifications(interestScheme);
+
+            // Load each point cloud
+            for (const dir of potreeDirs) {
+                const pointCloudUrl = `${dir}`;
+                console.log(`Loading point cloud: ${pointCloudUrl}`);
+
+                try {
+                    const result = await Potree.loadPointCloud(pointCloudUrl);
+                    let pointcloud = result.pointcloud;
+                    let material = pointcloud.material;
+                    console.log('result',result)
+
+                    // Configure material properties
+                    material.minSize = 2;
+                    material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
+                    // material.pointColorType = Potree.PointColorType.CLASSIFICATION;
+
+                    // Add point cloud to scene
+                    viewer.scene.addPointCloud(pointcloud);
+
+                    loadedClouds++;
+                    console.log(`Loaded ${loadedClouds}/${totalClouds} point clouds`);
+
+                    // Fit to screen after the last point cloud is loaded
+                    if (loadedClouds === totalClouds) {
+                        viewer.fitToScreen();
+
+                        // Automatically show the areas after point clouds are loaded
+                        setTimeout(() => {
+                            createAreaMeasurements();
+                        }, 1000);
+                    }
+                } catch (error) {
+                    console.error(`Error loading point cloud ${pointCloudUrl}:`, error);
+                }
+            }
+        }
+
+        // Start loading point clouds
+        loadPointClouds();
+    </script>
+</body>
+
+</html>

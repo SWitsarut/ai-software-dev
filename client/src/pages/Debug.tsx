@@ -64,6 +64,7 @@ const DataForm: React.FC<DataFormProps> = ({
     { displayName: '67ea68c915848637748d79c8', path: '67ea68c915848637748d79c8/potree/0' },
     { displayName: '8_label_test', path: '67ea70a8238fce10e53072fa/potree/0' },
     { displayName: 'AJ_TEST', path: '67ea7122238fce10e5307323/potree/0' },
+    { displayName: 'Toronto3D', path: 'forPotree' },
   ];
 
   const formRef = useRef<HTMLFormElement>(null);

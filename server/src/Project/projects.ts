@@ -8,6 +8,31 @@ import { stripe } from '../payments/payments'
 
 const router = express.Router()
 
+
+/**
+ * @swagger
+ * /projects/{teamId}:
+ *   get:
+ *     summary: Get all projects for a team
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: teamId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the team
+ *     responses:
+ *       200:
+ *         description: List of projects
+ *       403:
+ *         description: User not found or not a team member
+ *       400:
+ *         description: No projects found
+ */
+
 router.get('/:teamId', authenticateToken, async (req, res): Promise<any> => {
     const userId = req.user?.userId
     const teamId = req.params.teamId;
@@ -21,6 +46,37 @@ router.get('/:teamId', authenticateToken, async (req, res): Promise<any> => {
     return res.status(StatusCodes.OK).json(projects)
 })
 
+
+
+/**
+ * @swagger
+ * /projects/detailed/{teamId}/projects/{projectId}:
+ *   get:
+ *     summary: Get detailed information of a project
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: teamId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the team
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the project
+ *     responses:
+ *       200:
+ *         description: Project details
+ *       404:
+ *         description: Project not found
+ *       500:
+ *         description: Failed to fetch project details
+ */
 
 router.get('/detailed/:teamId/projects/:projectId', authenticateToken, async (req, res): Promise<any> => {
     try {
@@ -48,6 +104,45 @@ router.get('/detailed/:teamId/projects/:projectId', authenticateToken, async (re
     }
 
 })
+
+
+/**
+ * @swagger
+ * /projects/payment-intent:
+ *   post:
+ *     summary: Create a payment intent for a project
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - teamId
+ *               - projectId
+ *             properties:
+ *               teamId:
+ *                 type: string
+ *                 description: The team ID
+ *               projectId:
+ *                 type: string
+ *                 description: The project ID
+ *     responses:
+ *       200:
+ *         description: Payment intent created successfully
+ *       400:
+ *         description: Missing or invalid input
+ *       403:
+ *         description: Unauthorized project access
+ *       404:
+ *         description: Project not found
+ *       500:
+ *         description: Failed to create payment intent
+ */
+
 router.post(`/payment-intent`, authenticateToken, async (req, res): Promise<any> => {
     try {
         const { teamId, projectId } = req.body;
@@ -58,11 +153,9 @@ router.post(`/payment-intent`, authenticateToken, async (req, res): Promise<any>
 
         // Find the project in the database
         const project = await Project.findById(projectId);
-
         if (!project) {
             return res.status(404).json({ error: 'Project not found' });
         }
-
         // Verify team ownership if needed
         if (project.teamId.toString() !== teamId) {
             return res.status(403).json({ error: 'Project does not belong to this team' });
@@ -80,10 +173,11 @@ router.post(`/payment-intent`, authenticateToken, async (req, res): Promise<any>
             return res.status(400).json({ error: 'Invalid project amount' });
         }
 
-        // Create a payment intent with Stripe
+        
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(amount * 100), // Convert to smallest currency unit (cents/satang)
+            amount: Math.round(amount * 100),
             currency: currency,
+            automatic_payment_methods: { enabled: true },
             metadata: {
                 projectId: project._id.toString(),
                 teamId: project.teamId.toString(),
@@ -92,7 +186,7 @@ router.post(`/payment-intent`, authenticateToken, async (req, res): Promise<any>
         });
 
         // Return client secret to frontend
-        res.status(200).json({
+        res.status(StatusCodes.OK).json({
             clientSecret: paymentIntent.client_secret,
             amount: amount,
             currency: currency

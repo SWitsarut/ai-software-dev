@@ -1,11 +1,13 @@
 import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import SideBar, { SideBarItemProps } from "./components/sidebar/SideBar";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import { Box } from "@mui/material";
+import { Box, useMediaQuery, useTheme, IconButton, AppBar, Toolbar, Typography } from "@mui/material";
 import Debug from "./pages/Debug";
 import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
+import MenuIcon from "@mui/icons-material/Menu";
 import { useAuth } from "./hooks/useAuth";
 import ProtectedRoute from "./components/Auth/ProtectedRoute";
 import FileUpload from "./pages/FileUpload";
@@ -21,27 +23,41 @@ import MultipleFileUpload from "./pages/MultipleFileUpload";
 import Hire from "./pages/Project/Hire";
 import PestControlIcon from '@mui/icons-material/PestControl';
 import ProjectPayment from "./pages/Project/ProjectPayment";
+
 // Create an initial set of routes for type safety
 export const baseOptions: SideBarItemProps[] = [
   { name: "Dashboard", path: "/", icon: <HomeIcon /> },
-  { name: "Upload file", path: '/upload' },
-  { name: "Upload files", path: '/uploads' },
-  { name: "check out", path: '/checkout' },
+  // { name: "Upload file", path: '/upload' },
+  // { name: "Upload files", path: '/uploads' },
+  // { name: "Check out", path: '/checkout' },
 ];
 
 // Protected routes that require authentication
 export const protectedOptions: SideBarItemProps[] = [
-  { name: "debug", path: "/debug", icon: <PestControlIcon /> },
+  { name: "Debug", path: "/debug", icon: <PestControlIcon /> },
   { name: "Teams", path: "/teams", icon: <GroupsIcon /> },
 ];
 
 export const protectedAdminOptions: SideBarItemProps[] = [
   { name: "Own", path: "/admin/user", icon: <PersonIcon /> },
-]
+];
 
 function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated } = useAuth();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // State to control sidebar visibility on mobile
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Automatically close sidebar when route changes (on mobile)
+  useEffect(() => {
+    if (isSmallScreen) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname, isSmallScreen]);
 
   // Combine public and protected routes based on authentication status
   const options = [
@@ -51,8 +67,50 @@ function App() {
 
   return (
     <Box sx={{ display: "flex", height: "100vh" }}>
-      {/* Render Sidebar only if not on Index page */}
-      {<SideBar navigate={navigate} options={options} />}
+      {/* Mobile app bar with menu button */}
+      {isSmallScreen && (
+        <AppBar 
+          position="fixed" 
+          elevation={0}
+          sx={{ 
+            zIndex: (theme) => theme.zIndex.drawer + 1,
+            width: '100%',
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            bgcolor: 'background.paper',
+            color: 'text.primary'
+          }}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={() => setSidebarOpen(true)}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 500 }}>
+              Point Cloud Lab
+            </Typography>
+          </Toolbar>
+        </AppBar>
+      )}
+
+      {/* Sidebar - shown differently based on screen size */}
+      {isSmallScreen ? (
+        sidebarOpen && (
+          <SideBar 
+            navigate={navigate} 
+            options={options} 
+            isMobile={true}
+            onClose={() => setSidebarOpen(false)}
+          />
+        )
+      ) : (
+        <SideBar navigate={navigate} options={options} />
+      )}
+
       <Box
         component="main"
         sx={{
@@ -61,6 +119,7 @@ function App() {
           backgroundColor: "background.default",
           p: 3,
           minHeight: "100vh",
+          mt: isSmallScreen ? '64px' : 0
         }}
       >
         <Routes>

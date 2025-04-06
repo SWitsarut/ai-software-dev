@@ -2,11 +2,13 @@ import React, { ChangeEvent, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import { TeamMemberRes, TeamWithDetailed } from '../Team/TeamInfo';
 import Loading from '../../components/Loading';
-import { Alert, Box, Button, Checkbox, Container, Divider, FormControlLabel, Grid, Paper, Snackbar, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Checkbox, Divider, FormControlLabel, Grid, Paper, Snackbar, Stack, TextField, Typography } from '@mui/material';
 import Page from '../../components/Page';
 import axios from '../../utils/axios';
 import { labels } from '../../utils/avaiable_label';
 import { cal_init_price } from '../../utils/cal_price';
+import { API_URL } from '../../context/AuthProvider';
+import PricingInfo from '../../components/PriceInfo';
 
 interface DataOwner {
     name: string,
@@ -28,9 +30,45 @@ interface DataDisplayProps extends Data {
     dataName: string
 }
 
-const DataDisplay: React.FC<DataDisplayProps> = ({ dataName, setNotifyOpen, teamId, _id, price, updatedAt, name, createBy, selectedLabels, init_price }) => {
+
+interface DataDisplayProps extends Data {
+    selectedLabels: number[]
+    init_price: number,
+    teamId: string,
+    setNotifyOpen: React.Dispatch<React.SetStateAction<boolean>>
+    dataName: string,
+    setSelectedData: React.Dispatch<React.SetStateAction<Data | null>> // New prop to track selected data
+}
+
+const DataDisplay: React.FC<DataDisplayProps> = ({ dataName, setNotifyOpen, teamId, _id, price, updatedAt, name, createBy, selectedLabels, init_price, setSelectedData }) => {
     const [isClickable, setIsClickable] = useState(true)
 
+    const submitForm = () => {
+        // Create and submit a form programmatically instead of using a ref
+        const form = document.createElement('form');
+        form.action = API_URL + "/preview";
+        form.method = "POST";
+        form.target = "_blank";
+
+        // Create and append project ID input
+        const dataIdInput = document.createElement('input');
+        dataIdInput.type = "hidden";
+        dataIdInput.name = "dataId";
+        dataIdInput.value = _id;
+        form.appendChild(dataIdInput);
+
+        // Create and append team ID input
+        const teamIdInput = document.createElement('input');
+        teamIdInput.type = "hidden";
+        teamIdInput.name = "teamId";
+        teamIdInput.value = teamId;
+        form.appendChild(teamIdInput);
+
+        // Append form to body, submit it, and remove it
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    };
 
     const handleClick = async () => {
         await axios.post('/buy', {
@@ -43,6 +81,15 @@ const DataDisplay: React.FC<DataDisplayProps> = ({ dataName, setNotifyOpen, team
         setIsClickable(false)
     }
 
+    const handleSelect = () => {
+        setSelectedData({
+            _id,
+            price,
+            updatedAt,
+            name,
+            createBy
+        });
+    };
 
     return (
         <Paper
@@ -64,11 +111,23 @@ const DataDisplay: React.FC<DataDisplayProps> = ({ dataName, setNotifyOpen, team
                             Created by: {createBy.name}
                         </Typography>
                     </div>
-                    <Typography variant="caption">
-                        Updated: {new Date(updatedAt).toLocaleString()}
-                    </Typography>
+                    <Stack sx={{ textAlign: "end" }}>
+                        <Typography variant="caption">
+                            Updated: {new Date(updatedAt).toLocaleString()}
+                        </Typography>
+                        <Typography variant="caption" color='blue' sx={{
+                            cursor: 'pointer',
+                        }}
+                            onClick={submitForm}
+                        >
+                            preview
+                        </Typography>
+                    </Stack>
                 </Stack>
-                <Button onClick={handleClick} variant='contained' disabled={!isClickable}>Buy: {init_price + price} ฿ </Button>
+                <Stack direction="row" spacing={1}>
+                    <Button onClick={handleClick} variant='contained' sx={{ flexGrow: 1 }} disabled={!isClickable}>Buy: {init_price + price} ฿</Button>
+                    <Button onClick={handleSelect} variant='outlined' >Select</Button>
+                </Stack>
             </Stack>
         </Paper >
     );
@@ -85,14 +144,14 @@ function Buy() {
     const [selectedLabels, setSelectedLabels] = useState<number[]>([23, 24, 12, 17]); // Default from server code
     const [availableData, setAvailableData] = useState<Data[] | null>(null)
     const [dataName, setDataName] = useState<string>("")
+    const [selectedData, setSelectedData] = useState<Data | null>(null); // Track selected data
 
     useEffect(() => {
-
+        // Re-render when notification state changes
     }, [notifyOpen])
 
     useEffect(() => {
         const label_price = cal_init_price(selectedLabels)
-        console.log(label_price)
         setInit_price(label_price)
     }, [selectedLabels])
 
@@ -103,8 +162,6 @@ function Buy() {
             ...value
         }))
         .filter(label => !isNaN(label.id)); // Ensure it's a valid number
-
-
 
     const handleLabelToggle = (labelId: number) => {
         setSelectedLabels(prev => {
@@ -123,7 +180,6 @@ function Buy() {
                 const res = await axios.get<TeamMemberRes>(`/teams/id/${id}`);
                 const available = await axios.get<Data[]>(`/buy`)
                 setAvailableData(available.data)
-                console.log('available.data', available.data)
 
                 setCaller(res.data.caller.role)
                 setTeamInfo(res.data.teamInfo)
@@ -138,7 +194,6 @@ function Buy() {
 
         if (id) {
             getInfo();
-            console.log('here')
         }
     }, [id])
 
@@ -147,80 +202,84 @@ function Buy() {
     return (
         <Page header={'Buy data'}>
             <Stack gap={3}>
-                <Paper elevation={3} sx={{
-                    p: 2,
-                    // m: 1,
-                    // mb: 2,
-                    width: "100%",
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                }}>
-                    <Stack >
-                        <TextField value={dataName}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setDataName(e.target.value)}
-                            label={"Project name"}
-                            sx={{
-                                mb: 1,
-                            }}
-                        />
+                <Grid container spacing={2}>
+                    {/* Left side - Label selection and project naming */}
+                    <Grid item xs={12} md={8}>
+                        <Paper elevation={3} sx={{ p: 2, width: "100%" }}>
+                            <Stack>
+                                <TextField value={dataName}
+                                    onChange={(e: ChangeEvent<HTMLInputElement>) => setDataName(e.target.value)}
+                                    label={"Project name"}
+                                    sx={{ mb: 1 }}
+                                />
 
-                        <Divider />
-                        <Grid container spacing={1} sx={{ mt: 1, mb: 1 }}>
-                            {labelsArray.map((label) => (
-                                <Grid item xs={6} sm={4} md={3} key={label.id}>
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={selectedLabels.includes(label.id)}
-                                                onChange={() => handleLabelToggle(label.id)}
+                                <Divider />
+                                <Grid container spacing={1} sx={{ mt: 1, mb: 1 }}>
+                                    {labelsArray.map((label) => (
+                                        <Grid item xs={6} sm={4} md={3} key={label.id}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={selectedLabels.includes(label.id)}
+                                                        onChange={() => handleLabelToggle(label.id)}
+                                                        sx={{
+                                                            color: `rgba(${label.color[0] * 255}, ${label.color[1] * 255}, ${label.color[2] * 255}, ${label.color[3]})`,
+                                                            '&.Mui-checked': {
+                                                                color: `rgba(${label.color[0] * 255}, ${label.color[1] * 255}, ${label.color[2] * 255}, ${label.color[3]})`
+                                                            }
+                                                        }}
+                                                    />
+                                                }
+                                                label={
+                                                    <Typography variant="body2" noWrap>
+                                                        {label.name}
+                                                    </Typography>
+                                                }
                                                 sx={{
-                                                    color: `rgba(${label.color[0] * 255}, ${label.color[1] * 255}, ${label.color[2] * 255}, ${label.color[3]})`,
-                                                    '&.Mui-checked': {
-                                                        color: `rgba(${label.color[0] * 255}, ${label.color[1] * 255}, ${label.color[2] * 255}, ${label.color[3]})`
-                                                    }
+                                                    width: '100%',
+                                                    margin: 0
                                                 }}
                                             />
-                                        }
-                                        label={
-                                            <Typography variant="body2" noWrap>
-                                                {label.name}
-                                            </Typography>
-                                        }
-                                        sx={{
-                                            width: '100%',
-                                            margin: 0
-                                        }}
-                                    />
+                                        </Grid>
+                                    ))}
                                 </Grid>
-                            ))}
-                        </Grid>
-                        <Divider />
-                        <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between' }}>
-                            <Button
-                                variant="contained"
-                                size="small"
-                                onClick={() => setSelectedLabels([])}
-                            >
-                                Clear All
-                            </Button>
-                            <Typography>labels price:{init_price}</Typography>
-                            <Button
-                                variant="contained"
-                                size="small"
-                                onClick={() => setSelectedLabels(labelsArray.map(label => label.id))}
-                            >
-                                Select All
-                            </Button>
-                        </Box>
-                    </Stack>
+                                <Divider />
+                                <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between' }}>
+                                    <Button
+                                        variant="contained"
+                                        size="small"
+                                        onClick={() => setSelectedLabels([])}
+                                    >
+                                        Clear All
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        size="small"
+                                        onClick={() => setSelectedLabels(labelsArray.map(label => label.id))}
+                                    >
+                                        Select All
+                                    </Button>
+                                </Box>
+                            </Stack>
+                        </Paper>
+                    </Grid>
 
-                </Paper>
+                    {/* Right side - Pricing information */}
+                    <Grid item xs={12} md={4}>
+                        <PricingInfo 
+                            selectedLabels={selectedLabels} 
+                            dataPrice={selectedData?.price || 0} 
+                        />
+                    </Grid>
+                </Grid>
 
-                <Grid container spacing={2} >
+                {/* Available Data Grid */}
+                <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
+                    Available Data Sets
+                </Typography>
+                <Grid container spacing={2}>
                     {availableData && availableData.map((data, index) => (
-                        <Grid item xs={12} sm={12} md={6} lg={4} key={index}>
+                        <Grid item xs={12} sm={6} md={4} key={index}>
                             <DataDisplay
                                 dataName={dataName}
                                 teamId={teamInfo?._id || ""}
@@ -232,14 +291,15 @@ function Buy() {
                                 init_price={init_price}
                                 price={data.price}
                                 setNotifyOpen={setNotifyOpen}
+                                setSelectedData={setSelectedData}
                             />
                         </Grid>
                     ))}
-
                 </Grid>
+
                 <Snackbar
                     open={notifyOpen}
-                    onClose={() => setNotifyOpen(false)} // Close when timeout or click happens
+                    onClose={() => setNotifyOpen(false)}
                     autoHideDuration={1200}
                 >
                     <Alert
@@ -252,7 +312,7 @@ function Buy() {
                     </Alert>
                 </Snackbar>
             </Stack>
-        </Page >
+        </Page>
     )
 }
 
