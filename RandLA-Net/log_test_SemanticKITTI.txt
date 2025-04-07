@@ -174,3 +174,7 @@ Epoch   1, end. Min possibility = 0.0
 Epoch   2, end. Min possibility = 0.5
 Epoch   3, end. Min possibility = 0.8
  Min possibility = 0.8
+Epoch   0, end. Min possibility = 0.0
+Epoch   1, end. Min possibility = 0.0
+Epoch   2, end. Min possibility = 0.6
+ Min possibility = 0.6
